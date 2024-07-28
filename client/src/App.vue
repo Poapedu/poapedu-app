@@ -21,6 +21,7 @@
         <SkillTree />
       </v-container>
     </v-main>
+    <AppFooter />
   </v-app>
 </template>
 
@@ -28,13 +29,15 @@
 import ProfileHeader from './components/ProfileHeader.vue'
 import Certifications from './components/CertificationsMod.vue'
 import SkillTree from './components/SkillTree.vue'
+import AppFooter from './components/AppFooter.vue'
 
 export default {
   name: 'App',
   components: {
     ProfileHeader,
     Certifications,
-    SkillTree
+    SkillTree,
+    AppFooter
   }
 }
 </script>

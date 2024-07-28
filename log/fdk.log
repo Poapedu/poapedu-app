@@ -1,0 +1,14 @@
+2024-07-28 10:53:20.076 +0530 [debug] ([34mconfigs.js[0m) [31mloaded default configs as "{"updates":{"manifest_url":"https://cdn.freshdev.io/assets/fdk/pv3_updates.json","period":24},"log":{"level":"info"},"javascript":{"ecma_version":2020},"request":{"timeout":5000},"global_apps":{"enabled":false},"easel":{"enabled":false}}"[0m
+2024-07-28 10:53:20.079 +0530 [debug] ([34mconfigs.js[0m) [31mloaded global configs as "{"global_apps":{"enabled":"true"}}"[0m
+2024-07-28 10:53:20.079 +0530 [debug] ([34mfile.js[0m) [31mError while requiring /Users/kotra/experiments/poapedu-app/.fdk/configs.json: Cannot find module '/Users/kotra/experiments/poapedu-app/.fdk/configs.json'
+Require stack:
+- /Users/kotra/.nvm/versions/node/v18.12.0/lib/node_modules/fdk/lib/utils/file.js
+- /Users/kotra/.nvm/versions/node/v18.12.0/lib/node_modules/fdk/lib/configs.js
+- /Users/kotra/.nvm/versions/node/v18.12.0/lib/node_modules/fdk/lib/logger.js
+- /Users/kotra/.nvm/versions/node/v18.12.0/lib/node_modules/fdk/index.js[0m
+2024-07-28 10:53:20.079 +0530 [debug] ([34mconfigs.js[0m) [31mloaded local configs as "{}"[0m
+2024-07-28 10:53:20.079 +0530 [debug] ([34mconfigs.js[0m) [31mloaded env configs as "{"updates":{},"log":{},"javascript":{},"request":{"timeout":5000}}"[0m
+2024-07-28 10:53:20.079 +0530 [debug] ([34mconfigs.js[0m) [31mloaded resolved configs as "{"updates":{"manifest_url":"https://cdn.freshdev.io/assets/fdk/pv3_updates.json","period":24},"log":{"level":"info"},"javascript":{"ecma_version":2020},"request":{"timeout":5000},"global_apps":{"enabled":"true"},"easel":{"enabled":false}}"[0m
+2024-07-28 10:53:20.079 +0530 [debug] ([34mlogger.js[0m) [31mStarting FDK in node v21.7.1 on darwin[0m
+2024-07-28 10:53:20.079 +0530 [debug] ([34msequelize.js[0m) [31msetting up sqilite at "/Users/kotra/experiments/poapedu-app/.fdk/store.sqlite"[0m
+2024-07-28 10:53:20.079 +0530 [error] [31m[ERROR][0m  Node.js version of 18.x.x is required to run this SDK. v21.7.1 found.
