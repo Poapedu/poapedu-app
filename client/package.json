@@ -1,38 +1,51 @@
 {
-  "name": "client",
-  "version": "0.0.0",
+  "name": "poapedu",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --fix --ignore-path .gitignore"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@mdi/font": "7.4.47",
-    "core-js": "^3.37.1",
+    "@mdi/font": "5.9.55",
+    "core-js": "^3.8.3",
     "roboto-fontface": "*",
-    "vue": "^3.4.31",
-    "vuetify": "^3.6.11"
+    "vue": "^3.2.13",
+    "vuetify": "^3.0.0-beta.0",
+    "vuex": "^4.1.0",
+    "webfontloader": "^1.0.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.5",
-    "eslint": "^8.57.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-config-vuetify": "^1.0.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.4.0",
-    "eslint-plugin-vue": "^9.27.0",
-    "pinia": "^2.1.7",
-    "sass": "1.77.6",
-    "unplugin-auto-import": "^0.17.6",
-    "unplugin-fonts": "^1.1.1",
-    "unplugin-vue-components": "^0.27.2",
-    "unplugin-vue-router": "^0.10.0",
-    "vite": "^5.3.3",
-    "vite-plugin-vue-layouts": "^0.11.0",
-    "vite-plugin-vuetify": "^2.0.3",
-    "vue-router": "^4.4.0"
-  }
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "vue-cli-plugin-vuetify": "~2.5.8",
+    "webpack-plugin-vuetify": "^2.0.0-alpha.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
 }
