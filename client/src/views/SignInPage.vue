@@ -7,7 +7,9 @@
       <v-col cols="12" md="6" class="form-column">
         <v-container class="form-container">
           <v-card-title class="text-h5">Poapedu</v-card-title>
-          <v-card-subtitle>Create your next gen builder's profile</v-card-subtitle>
+          <v-card-subtitle
+            >Create your next gen builder's profile</v-card-subtitle
+          >
           <v-form @submit.prevent="handleMagicLinkSignIn">
             <v-text-field
               label="Email address"
@@ -17,7 +19,8 @@
             <v-checkbox label="Remember me"></v-checkbox>
             <v-btn type="submit" color="primary" block>Sign In</v-btn>
             <v-alert v-if="emailSent" type="success" dismissible>
-              A magic link has been sent to your email address. You may close this tab now.
+              A magic link has been sent to your email address. You may close
+              this tab now.
             </v-alert>
             <v-alert v-if="errorMessage" type="error" dismissible>
               {{ errorMessage }}
@@ -52,13 +55,14 @@ export default {
         process.env.VUE_APP_SUPABASE_ANON_KEY
       );
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email: this.email,
-        options: {
-          emailRedirectTo: "http://localhost:8080/dashboard",
-          data: { app_role: "user" },
-        },
-      }) || {}; // Ensure destructuring of possible undefined response
+      const { error } =
+        (await supabase.auth.signInWithOtp({
+          email: this.email,
+          options: {
+            emailRedirectTo: "http://localhost:8080/dashboard",
+            data: { app_role: "user" },
+          },
+        })) || {}; // Ensure destructuring of possible undefined response
 
       if (error) {
         this.errorMessage = error.message;
@@ -81,7 +85,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   overflow: hidden; /* Prevents scrollbar */
 }
 
