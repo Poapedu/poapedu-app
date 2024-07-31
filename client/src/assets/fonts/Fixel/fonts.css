@@ -1,0 +1,11 @@
+@font-face {
+    font-family: "FixelDisplay";
+    font-weight: 400;
+    font-style: normal;
+    /*src: local("FixelDisplay"), url("@/assets/fonts/Fixel/FixelDisplay-Regular.woff2") format("woff2");*/
+    src: url('@/assets/fonts/Fixel/FixelDisplay-Regular.woff2') format('woff2')
+}
+
+body {
+    font-family: 'FixelDisplay', sans-serif !important;
+}

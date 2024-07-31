@@ -3,10 +3,10 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
-import { loadFonts } from "./plugins/webfontloader";
+//import { loadFonts } from "./plugins/webfontloader";
 import { createClient } from "@supabase/supabase-js";
 
-loadFonts();
+//loadFonts();
 
 const supabase = createClient(
   process.env.VUE_APP_SUPABASE_URL,
