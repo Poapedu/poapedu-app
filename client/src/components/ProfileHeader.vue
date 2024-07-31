@@ -7,7 +7,7 @@
             <v-avatar size="120" class="profile-avatar">
               <v-img :src="avatarUrl"></v-img>
             </v-avatar>
-            <v-btn class="edit-profile-btn" text small>
+            <v-btn class="edit-profile-btn" text small @click="goToEditProfile">
               <v-icon left small>mdi-pencil</v-icon>
               Edit Profile
             </v-btn>
@@ -39,7 +39,12 @@
       skills: ['Skill tag #1', 'Skill tag #2', 'Skill tag #3', 'Skill tag #4'],
       bannerUrl: 'https://placekitten.com/2500/800',
       avatarUrl: 'https://eu.ui-avatars.com/api/?name=John+Doe&size=250'
-    })
+    }),
+    methods: {
+      goToEditProfile() {
+        this.$router.push('/edit-profile');
+      }
+    }
   }
   </script>
   

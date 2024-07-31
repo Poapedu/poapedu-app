@@ -33,7 +33,7 @@
         <!-- Bottom section -->
         <v-row class="mt-10 align-center">
           <v-col cols="12" md="4">
-            <v-img src="path/to/learnweb3-logo.png" max-width="150" contain></v-img>
+            <v-img src="../assets/logo.png" max-width="50" contain></v-img>
           </v-col>
           <v-col cols="12" md="4" class="text-center text-md-left">
             <span>poapedu</span>
