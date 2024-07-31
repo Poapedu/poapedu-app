@@ -139,5 +139,74 @@ app.get('/scrape', async (req, res) => {
   }
 });
 
+// Helper function to insert or get skill ID
+const getSkillId = (skillName, callback) => {
+  const checkQuery = 'SELECT skill_id FROM Skills WHERE name = ?';
+  db.query(checkQuery, [skillName], (err, results) => {
+    if (err) {
+      return callback(err);
+    }
+
+    if (results.length > 0) {
+      // Skill already exists
+      callback(null, results[0].skill_id);
+    } else {
+      // Insert new skill
+      const insertQuery = 'INSERT INTO Skills (name) VALUES (?)';
+      db.query(insertQuery, [skillName], (err, results) => {
+        if (err) {
+          return callback(err);
+        }
+        callback(null, results.insertId);
+      });
+    }
+  });
+};
+
+// Webhook endpoint to parse skills JSON data and insert into our tables.
+app.post('/skills-webhook', (req, res) => {
+  const { userid, skills } = req.body;
+
+  if (!userid || !Array.isArray(skills)) {
+    return res.status(400).json({ message: 'Invalid data' });
+  }
+
+  let skillsProcessed = 0;
+  const skillIds = [];
+  
+  skills.forEach(skill => {
+    getSkillId(skill, (err, skillId) => {
+      if (err) {
+        console.error('Error processing skill:', err);
+        db.end();
+        return res.status(500).json({ message: 'Database error' });
+      }
+      
+      skillIds.push(skillId);
+      skillsProcessed++;
+
+      if (skillsProcessed === skills.length) {
+        // All skills processed, now inserting into LearnerSkills
+        const insertValues = skillIds.map(id => [userid, id, 'beginner']);
+        const insertQuery = 'INSERT INTO LearnerSkills (learner_id, skill_id, proficiency_level) VALUES ?';
+        db.query(insertQuery, [insertValues], (err) => {
+          // Close the connection after all operations
+          db.end();
+          if (err) {
+            console.error('Error inserting into LearnerSkills:', err);
+            return res.status(500).json({ message: 'Database error' });
+          }
+
+          res.json({
+            message: 'Data received and inserted successfully',
+            userid,
+            skills
+          });
+        });
+      }
+    });
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
