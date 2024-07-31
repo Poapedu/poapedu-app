@@ -1,16 +1,19 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
+const puppeteer = require('puppeteer');
+const { URL } = require('url');
+require('dotenv').config(); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'your_mysql_username',
-  password: 'your_mysql_password',
-  database: 'your_database_name'
+  host: `${process.env.PROD_MYSQL_HOST}`,
+  user: `${process.env.PROD_MYSQL_USER}`,
+  password: `${process.env.PROD_MYSQL_PASS}`,
+  database: `${process.env.PROD_MYSQL_DB}`
 });
 
 db.connect((err) => {
@@ -25,7 +28,7 @@ db.connect((err) => {
  */
 app.post('/subscribe', (req, res) => {
   const { email } = req.body;
-  const sql = 'INSERT INTO newsletters (email) VALUES (?)';
+  const sql = 'INSERT INTO NewsletterSubscribers (email) VALUES (?)';
   
   db.query(sql, [email], (err, result) => {
     if (err) {
@@ -35,6 +38,105 @@ app.post('/subscribe', (req, res) => {
       res.json({ success: true, message: 'Subscription successful' });
     }
   });
+});
+
+/**
+ * 
+ */
+
+app.get('/scrape', async (req, res) => {
+  const { url: pageUrl } = req.query;
+  if (!pageUrl) {
+    return res.status(400).send('URL is required');
+  }
+
+  try {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    // console messages from the page to handle any errors. TBD to extend this but for now just a log.
+    page.on('console', (msg) => {
+      if (msg.type() === 'log') {
+        console.log(`PAGE LOG: ${msg.text()}`);
+      }
+    });
+
+    await page.goto(pageUrl, { waitUntil: 'networkidle2' });
+
+    const hostname = new URL(pageUrl).hostname;
+
+    let scrapedContent;
+
+    if (hostname.includes('credly.com')) {
+        scrapedContent = await page.evaluate(() => {
+        const mainContent = document.querySelector('main#root')?.innerHTML || '';
+        const ulContent = Array.from(document.querySelectorAll('.cr-badges-badge-skills__skills li')).map(el => el.textContent).join(', ');
+        
+        const descriptionDiv = document.querySelector('.cr-badges-full-badge__description');
+        const firstShiitakeSpan = descriptionDiv?.querySelector('span.shiitake-children');
+        const descriptionText = firstShiitakeSpan ? firstShiitakeSpan.textContent.trim() : '';
+
+        const certificateImage = document.querySelector('.cr-badges-full-badge__img')?.src || '';
+        const issuedToHtml = document.querySelector('.badge-banner-issued-to-text')?.innerHTML || '';
+        const certificateTitle = document.querySelector('.ac-heading--badge-name-hero')?.textContent.trim() || '';
+        const issuedBy = document.querySelector('.cr-badges-badge-issuer__entity')?.innerHTML || '';
+
+        return {
+          domain: 'credly.com',
+          mainContent,
+          skills: ulContent,
+          description: descriptionText,
+          issuedTo: issuedToHtml,
+          certificateImage,
+          certificateTitle: certificateTitle,
+          issuedBy: issuedBy
+        };
+      });
+
+    } else if (hostname.includes('credential.net')) {
+
+      scrapedContent = await page.evaluate(() => {
+        //console.log('Extracting certificate image...');
+        const certificateImage = document.querySelector('.certificate-bg.ng-star-inserted img')?.src || '';
+        //console.log('Extracting column structure...');
+        const columnStructure = document.querySelector('.column-structure')?.innerHTML || '';
+        //console.log('Extracting description...');
+        const descriptionText = document.querySelector('.description')?.textContent.trim() || '';
+        //console.log('Extracting skills...');
+        const ulContent = Array.from(document.querySelectorAll('accredible-chip-list ul li')).map(el => el.textContent).join(', ');
+        //console.log('Extracting issued date...');
+        const issuedOnText = document.querySelector('.issued-on')?.textContent.trim() || '';
+        //console.log('Extracting expiry date...');
+        const expiresOnText = document.querySelector('.expires-on')?.textContent.trim() || '';
+        //console.log('Extracting issuer logo...');
+        const issuerLogoHtml = document.querySelector('.issuer-logo')?.innerHTML || '';
+        //console.log('Extracting certificate title...');
+        const certificateTitle = document.querySelector('h1.mat-h1')?.textContent.trim() || '';
+        //console.log('Extraction complete.');
+
+        return {
+          domain: 'credential.net',
+          certificateImage,
+          columnStructure,
+          description: descriptionText,
+          skills: ulContent,
+          issuedOn: issuedOnText,
+          expiresOn: expiresOnText,
+          issuerLogo: issuerLogoHtml,
+          certificateTitle
+        };
+      });
+    } else {
+      const bodyText = await page.evaluate(() => document.body.innerText);
+      scrapedContent = { body: bodyText };
+    }
+
+    res.json(scrapedContent);
+    await browser.close();
+
+  } catch (error) {
+    res.status(500).send('Error scraping the content');
+  }
 });
 
 const PORT = process.env.PORT || 3000;
