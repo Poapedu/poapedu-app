@@ -130,6 +130,9 @@
                     issuedTo: '',
                     dateOfIssue: '',
                 },
+                loading: false,
+                error: null,
+                data: null,
             };
         },
         methods: {
@@ -158,10 +161,24 @@
                 this.showUnsupportedAlert = false;
                 this.showScrapedContent = false;
             },
-            generateData() {
+            async generateData() {
                 if (this.validateUrl()) {
-                    // Here you would typically make an API call to scrape the data
-                    // For this example, we'll just simulate it with a timeout
+                    
+                    this.loading = true;
+                    this.error = null;
+                    this.data = null;
+
+                    try {
+                        const response = await fetch(`http://localhost:3000/scrape?url=${encodeURIComponent(this.url)}`);
+                        this.data = await response.json();
+
+                    } catch (error) {
+                        console.error('Error fetching content:', error);
+                        this.error = error.message;
+                    } finally {
+                        this.loading = false;
+                    }
+
                     setTimeout(() => {
                     this.scrapedContent = {
                         courseName: '[Language] Web-scraping Test for Extractive and Abstractive Summarizers',

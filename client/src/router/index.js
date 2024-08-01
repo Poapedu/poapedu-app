@@ -14,13 +14,13 @@ const routes = [
     path: "/dashboard",
     name: "Dashboard",
     component: UserDashboard,
-    meta: { requiresAuth: true },
+    // meta: { requiresAuth: true },
   },
   {
     path: "/edit-profile",
     name: "EditProfile",
     component: EditProfile,
-    meta: { requiresAuth: true },
+    // meta: { requiresAuth: true },
   },
   {
     path: "/signin",

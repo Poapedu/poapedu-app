@@ -1,104 +1,87 @@
 <template>
-    <v-footer dark padless>
+    <v-footer color="#6BA1B4" padless>
       <v-container class="py-10">
-        <v-row>
-          <!-- Navigation columns -->
-          <v-col cols="12" sm="6" md="2" lg="2" v-for="(column, index) in columns" :key="index">
-            <h3 class="text-h6 font-weight-bold mb-4">{{ column.title }}</h3>
-            <ul class="pa-0 footer-links">
-                <li v-for="(item, i) in column.items" :key="i">
-                    <a href="#" class="footer-link">{{ item }}</a>
-                </li>
-            </ul>
-          </v-col>
-  
+        <v-row class="mt-10 align-center" justify="center">
+
           <!-- Newsletter subscription -->
-          <v-col cols="12" sm="6" md="4" lg="2">
-            <h3 class="text-h6 font-weight-bold mb-4">Subscribe to our newsletter</h3>
-            <p class="mb-4">The latest news, articles, and resources, sent to your inbox weekly.</p>
+          <v-col cols="6" class="text-center">
+            <h3 class="text-h4 font-weight-bold mb-4">Subscribe to our newsletter</h3>
+            <p class="mb-4">We'll drop you some goodies and perks once a month or whenever we launch a big feature! Don't hesitate to subscribe!</p>
             <v-form @submit.prevent="subscribeNewsletter">
               <v-text-field
                 v-model="email"
-                label="Enter your email"
+                label="Enter your email and press enter"
                 outlined
                 dense
                 dark
                 append-outer-icon="mdi-send"
                 @click:append-outer="subscribeNewsletter"
+                :rules="emailRules"
+                required
               ></v-text-field>
+              <v-alert v-if="successMessage" type="success" dismissible>{{ successMessage }}</v-alert>
+              <v-alert v-if="errorMessage" type="error" dismissible>{{ errorMessage }}</v-alert>
             </v-form>
           </v-col>
         </v-row>
   
         <!-- Bottom section -->
         <v-row class="mt-10 align-center">
-          <v-col cols="12" md="4">
+          <v-col cols="6">
             <v-img src="../assets/logo.png" max-width="50" contain></v-img>
           </v-col>
-          <v-col cols="12" md="4" class="text-center text-md-left">
-            <span>poapedu</span>
+          <v-col cols="16" class="text-right">
+            <span style="">we are poapedu. our code is serious business, but our footers are a joke.</span>
           </v-col>
-          <!-- <v-col cols="12" md="4">
-            <v-btn v-for="icon in socialIcons" :key="icon.icon" icon :href="icon.link" target="_blank">
-              <v-icon>{{ icon.icon }}</v-icon>
-            </v-btn>
-          </v-col> -->
         </v-row>
       </v-container>
     </v-footer>
   </template>
   
   <script>
+
+  import axios from 'axios';
+
   export default {
     data: () => ({
-      email: '',
-      columns: [
-        {
-          title: 'Learn',
-          items: ['Minis', 'Lessons', 'Courses & Degrees']
-        },
-        {
-          title: 'Opportunities',
-          items: ['Hackathons', 'Open Source', 'Events']
-        },
-        {
-          title: 'Community',
-          items: ['Leaderboard', 'Credentials', 'Discord', 'My Profile']
-        },
-        {
-          title: 'Resources',
-          items: ['Testnet Faucet', 'Level Up']
-        },
-        {
-          title: 'Legal',
-          items: ['Privacy Policy', 'Terms and Conditions']
-        }
-      ],
-      socialIcons: [
-        { icon: 'mdi-twitter', link: '#' },
-        { icon: 'mdi-discord', link: '#' },
-        { icon: 'mdi-youtube', link: '#' },
-        { icon: 'mdi-github', link: '#' },
-        { icon: 'mdi-linkedin', link: '#' },
-        { icon: 'mdi-instagram', link: '#' },
-        { icon: 'mdi-reddit', link: '#' },
-        { icon: 'mdi-facebook', link: '#' }
+      email: '',  
+      successMessage: '',
+      errorMessage: '',
+      emailRules: [
+        v => !!v || 'Email is required',
+        v => /.+@.+\..+/.test(v) || 'E-mail must be valid'
       ]
     }),
     methods: {
-      subscribeNewsletter() {
-        // Implement newsletter subscription logic here
+      async subscribeNewsletter() {
         console.log('Subscribing:', this.email);
+        const form = this.$refs.form;
+        if (!form || !form.validate()) {
+          return; // Stop if the form is invalid
+        }
+        try {
+          // Reset messages
+          this.successMessage = '';
+          this.errorMessage = '';
+
+          // Send POST request to /subscribe API
+          const response = await axios.post('/subscribe', { email: this.email });
+          if(response.data.success) {
+            this.successMessage = 'Subscription successful!';
+            this.email = ''; // Clear the email field
+          } else {
+            this.errorMessage = 'Subscription failed. Please try again.';
+          }
+        } catch (error) {
+          // Handle error response
+          this.errorMessage = 'Subscription failed. Please try again.';
+        }
       }
     }
   }
   </script>
   
   <style scoped>
-    .v-footer {
-    background-color: #dbdbdb !important;
-    }
-
     @media (max-width: 1264px) {
     .v-col-lg-2 {
         flex: 0 0 33.333333% !important;
@@ -106,18 +89,18 @@
     }
     }
     .footer-links {
-    list-style-type: none;
+      list-style-type: none;
     }
 
     .footer-link {
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 0.875rem;
-    line-height: 2;
-    transition: color 0.2s ease;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.875rem;
+      line-height: 2;
+      transition: color 0.2s ease;
     }
 
     .footer-link:hover {
-    color: #bdbdbd;
+      color: #bdbdbd;
     }
   </style>

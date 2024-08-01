@@ -5,12 +5,11 @@
         >POAPEDU</v-toolbar-title
       >
       <v-spacer></v-spacer>
-      <v-btn text class="mr-2">Login</v-btn>
-      <v-btn color="black" dark>Sign Up</v-btn>
+      <v-btn text class="mr-2" @click="goToSignin">Login/Sign Up</v-btn>
     </v-app-bar>
 
     <v-main class="grey lighten-4">
-      <v-container class="py-12">
+      <v-container class="py-16 mt-4">
         <v-row>
           <v-col cols="12" md="6">
             <h1 class="text-h2 font-weight-bold mb-4">
@@ -25,13 +24,11 @@
             >
           </v-col>
           <v-col cols="12" md="6">
-            <v-sheet height="300" class="d-flex align-center justify-center">
-              <v-icon x-large>mdi-image-outline</v-icon>
-            </v-sheet>
+            <v-img aspect-ratio="16/9" cover src="../assets/section-1-image.jpg"></v-img>
           </v-col>
         </v-row>
 
-        <v-row class="mt-16">
+        <v-row class="mt-16 py-16">
           <v-col cols="12" class="text-center">
             <h2 class="text-h4 font-weight-bold mb-2">
               You've completed courses on different platforms and chains<br />
@@ -41,7 +38,7 @@
           </v-col>
         </v-row>
 
-        <v-row class="mt-16">
+        <v-row class="mt-16 py-16">
           <v-col cols="12" md="6">
             <h3 class="text-h4 font-weight-bold mb-4">
               Craft a builder's profile with Poapedu
@@ -53,29 +50,34 @@
             <v-list>
               <v-list-item v-for="(item, i) in features" :key="i">
                 <v-list-item-icon>
-                  <v-icon color="black">mdi-check-circle</v-icon>
+                  <v-icon color="white">mdi-check-circle</v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
-                  <v-list-item-title v-text="item"></v-list-item-title>
+                  <v-list-item-title style="display:inline-flex" v-text="item"></v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
           </v-col>
           <v-col cols="12" md="6">
-            <v-sheet height="300" class="d-flex align-center justify-center">
-              <v-icon x-large>mdi-image-outline</v-icon>
-            </v-sheet>
+            <v-img aspect-ratio="16/9" cover src="../assets/user-profile.jpg"></v-img>
           </v-col>
         </v-row>
 
-        <v-row class="mt-16">
+        <v-row class="mt-16 py-16">
           <v-col cols="12" class="text-center">
             <h3 class="text-h4 font-weight-bold mb-8">
               We're compatible with your favorite platforms
             </h3>
             <v-row justify="center">
-              <v-col v-for="n in 5" :key="n" cols="auto">
-                <v-avatar size="64" color="grey lighten-2"></v-avatar>
+              <v-col cols="auto">
+                <v-avatar size="64" color="grey lighten-2">
+                  <v-img src="../assets/accredible_logo.jpeg"></v-img>
+                </v-avatar>
+              </v-col>
+              <v-col cols="auto">
+                <v-avatar size="64" color="grey lighten-2">
+                  <v-img src="../assets/credly_logo.svg"></v-img>
+                </v-avatar>
               </v-col>
             </v-row>
           </v-col>
@@ -84,14 +86,14 @@
     </v-main>
     <v-footer color="grey lighten-3" padless>
       <v-container>
-        <v-row align="center" no-gutters>
+        <v-row align="center" class="py-16" no-gutters>
           <v-col cols="12" md="6">
-            <h3 class="text-h5 font-weight-bold">Ready to get Poapedus?</h3>
-            <p class="mb-0">Sign up now!</p>
+            <h3 class="text-h3 font-weight-bold">Ready to get Poapedus?</h3>
+            <p class="text-h6 mb-0">Sign up now!</p>
           </v-col>
           <v-col cols="12" md="6" class="text-md-right">
             <v-btn color="black" dark x-large class="text-capitalize"
-              >Sign up now</v-btn
+            @click="goToSignin">Sign up now</v-btn
             >
           </v-col>
         </v-row>
@@ -116,6 +118,11 @@ export default {
       "Get 1-to-1 Poapedu NFT for every badge and cert",
     ],
   }),
+  methods: {
+    goToSignin() {
+      this.$router.push("/signin");
+    },
+  },
 };
 </script>
 
