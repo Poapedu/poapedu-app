@@ -14,7 +14,7 @@
           </v-col>
         </v-row>
         <v-row>
-            <v-col cols="12" class="profile-info pa-0 mt-5">
+            <v-col cols="7" class="profile-info pa-0 mt-5">
                 <div class="profile-details ml-4">
                   <h2 class="text-h4 font-weight-bold mb-1">{{ name }}</h2>
                   <p class="text-subtitle-1 mb-2">{{ bio }}</p>
@@ -22,6 +22,16 @@
                       <v-chip v-for="skill in skills" :key="skill" class="mr-2 mb-2 skill-badges" small>
                       {{ skill }}
                       </v-chip>
+                  </div>
+                </div>
+            </v-col>
+            <v-col cols="5" class="profile-info pa-0 mt-5">
+                <div class="profile-details ml-4">
+
+                  <p class="text-subtitle-1 mb-2">
+                    <v-icon color="#000" left small>mdi-email</v-icon> firstlastname@gmail.com</p>
+                  <div>
+                    <!-- social icons tbd -->
                   </div>
                 </div>
             </v-col>

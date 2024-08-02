@@ -65,7 +65,7 @@
       <v-col cols="12" class="text-center">
         <v-fade-transition>
           <div v-if="!allCertificationsLoaded">
-            <v-btn text color="primary" @click="loadMore" class="text-none">
+            <v-btn text color="#CBC0B3" rounded="xl" @click="loadMore" class="text-none">
               View More
               <v-icon right>mdi-chevron-down</v-icon>
             </v-btn>

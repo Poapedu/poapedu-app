@@ -16,21 +16,21 @@ const db = mysql.createConnection({
   database: `${process.env.PROD_MYSQL_DB}`
 });
 
-db.connect((err) => {
-  if (err) {
-    throw err;
-  }
-  console.log('Connected to MySQL database');
-});
-
 /** 
  * Newsletter subscription API
  */
 app.post('/subscribe', (req, res) => {
   const { email } = req.body;
   const sql = 'INSERT INTO NewsletterSubscribers (email) VALUES (?)';
-  
+  db.connect((err) => {
+    if (err) {
+      throw err;
+    }
+    console.log('Connected to MySQL database');
+  });
+
   db.query(sql, [email], (err, result) => {
+    db.end();
     if (err) {
       console.error('Database error:', err);
       res.status(500).json({ success: false, message: 'Subscription failed' });
@@ -142,6 +142,12 @@ app.get('/scrape', async (req, res) => {
 // Helper function to insert or get skill ID
 const getSkillId = (skillName, callback) => {
   const checkQuery = 'SELECT skill_id FROM Skills WHERE name = ?';
+  db.connect((err) => {
+    if (err) {
+      throw err;
+    }
+    console.log('Connected to MySQL database');
+  });
   db.query(checkQuery, [skillName], (err, results) => {
     if (err) {
       return callback(err);
@@ -154,6 +160,7 @@ const getSkillId = (skillName, callback) => {
       // Insert new skill
       const insertQuery = 'INSERT INTO Skills (name) VALUES (?)';
       db.query(insertQuery, [skillName], (err, results) => {
+        db.end();
         if (err) {
           return callback(err);
         }
@@ -189,6 +196,12 @@ app.post('/skills-webhook', (req, res) => {
         // All skills processed, now inserting into LearnerSkills
         const insertValues = skillIds.map(id => [userid, id, 'beginner']);
         const insertQuery = 'INSERT INTO LearnerSkills (learner_id, skill_id, proficiency_level) VALUES ?';
+        db.connect((err) => {
+          if (err) {
+            throw err;
+          }
+          console.log('Connected to MySQL database');
+        });
         db.query(insertQuery, [insertValues], (err) => {
           // Close the connection after all operations
           db.end();

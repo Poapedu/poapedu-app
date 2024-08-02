@@ -65,7 +65,7 @@
           this.errorMessage = '';
 
           // Send POST request to /subscribe API
-          const response = await axios.post('/subscribe', { email: this.email });
+          const response = await axios.post(`${process.env.VUE_APP_LOCAL_SERVER_URL}/subscribe`, { email: this.email });
           if(response.data.success) {
             this.successMessage = 'Subscription successful!';
             this.email = ''; // Clear the email field

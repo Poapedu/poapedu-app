@@ -56,20 +56,28 @@
                 label="Insert Certificate URL"
                 v-model="certificateUrl"
                 :error-messages="urlErrorMessage"
-                append-icon="mdi-refresh"
+                append-icon="mdi-sync"
                 @click:append="generateData"
                 @input="clearErrors"
                 ></v-text-field>
 
+                <v-progress-circular class="mb-3" v-if="loading" indeterminate color="primary"></v-progress-circular>
                 <v-alert v-if="showUnsupportedAlert" type="warning" class="mt-2">
                 This platform is not supported yet.
                 </v-alert>
 
                 <div v-if="showScrapedContent">
-                    <h3 class="mt-4">Scraped Content</h3>
-                    
-                    <v-card outlined class="mt-2">
-                        <v-card-text>
+                    <h3 class="mt-4">Certificate Information</h3>                    
+                    <v-card outlined class="mt-2" v-if="data && data.domain === 'credly.com'">
+                        <v-alert
+                            density="compact"
+                            text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                            title="Alert!"
+                            type="warning"
+                            class="mb-2"
+                        ></v-alert>
+                        <v-card-text style="font-size:16px;">
+                            <v-img :width="300" class="mt-2 mb-2" :src="scrapedContent.certificateImage" :alt="scrapedContent.courseName" :title="scrapedContent.courseName"></v-img>
                             <p><strong>Course Name:</strong> {{ scrapedContent.courseName }}</p>
                             <p><strong>Course Description:</strong> {{ scrapedContent.courseDescription }}</p>
                             <p><strong>Skills Acquired:</strong></p>
@@ -78,16 +86,41 @@
                                 {{ skill }}
                                 </v-chip>
                             </v-chip-group>
-                            <p><strong>Issued To:</strong> {{ scrapedContent.issuedTo }}</p>
+                            <p><strong>Issued To:</strong><span v-html="scrapedContent.issuedTo"></span></p>
+                            <p v-if="scrapedContent.dateOfIssue!='' || scrapedContent.dateOfIssue!=null"><strong>Date of Issue:</strong> {{ scrapedContent.dateOfIssue }}</p>
+                        </v-card-text>
+                    </v-card>
+
+                    <v-card outlined class="mt-2" v-if="data && data.domain === 'credential.net'">
+                        <v-alert
+                            density="compact"
+                            text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                            title="Alert!"
+                            type="warning"
+                            class="mb-2"
+                        ></v-alert>
+                        <v-card-text style="font-size:16px;">
+                            <v-img :width="300" class="mt-2 mb-2" :src="scrapedContent.certificateImage" :alt="scrapedContent.courseName" :title="scrapedContent.courseName"></v-img>
+                            <p><strong>Course Name:</strong> {{ scrapedContent.courseName }}</p>
+                            <p><strong>Course Description:</strong> {{ scrapedContent.courseDescription }}</p>
+                            <p><strong>Skills Acquired:</strong></p>
+                            <v-chip-group>
+                                <v-chip v-for="skill in scrapedContent.skills" :key="skill">
+                                {{ skill }}
+                                </v-chip>
+                            </v-chip-group>
+                            <p><strong>Issued To:</strong><span v-html="scrapedContent.issuedTo"></span></p>
+                            <p><strong>Issued By:</strong><span v-html="scrapedContent.issuedBy"></span></p>
+                            <p><strong>Expires On:</strong><span v-html="scrapedContent.expiresOn"></span></p>
                             <p><strong>Date of Issue:</strong> {{ scrapedContent.dateOfIssue }}</p>
                         </v-card-text>
                     </v-card>
                     
-                    <v-btn rounded="xl" color="primary" class="mt-4">Mint NFT</v-btn>
+                    <v-btn rounded="xl" color="#A2D29F" class="mt-4" size="large">Mint NFT</v-btn>
                 </div>
 
 
-                <v-btn rounded="xl" color="primary" class="mt-15" text @click="goBack">
+                <v-btn rounded="xl" color="primary" class="d-print-block mt-10" text @click="goBack">
                     <v-icon left>mdi-chevron-left</v-icon>
                     Back to Profile
                 </v-btn>
@@ -119,16 +152,21 @@
                     { name: 'Intro to MetaMask', wallet: 'MetaMask', image: '' },
                     { name: 'Advanced Contracts', wallet: 'MetaMask', image: '' },
                 ],
-                certificateUrl: 'https://www.example.com/certificate/123456789',
+                certificateUrl: 'https://www.credly.com/badges/de7637c4-4f35-4e1a-9177-36ba3498496a/public_url',
                 showScrapedContent: false,
                 showUnsupportedAlert: false,
                 urlErrorMessage: '',
                 scrapedContent: {
                     courseName: '',
                     courseDescription: '',
-                    skills: [],
+                    skills: '',
                     issuedTo: '',
                     dateOfIssue: '',
+                    domain: '',
+                    certificateImage: '',
+                    issedBy: '',
+                    issuerLogo: '',
+                    expiresOn: '',
                 },
                 loading: false,
                 error: null,
@@ -169,7 +207,7 @@
                     this.data = null;
 
                     try {
-                        const response = await fetch(`http://localhost:3000/scrape?url=${encodeURIComponent(this.url)}`);
+                        const response = await fetch(`${process.env.VUE_APP_LOCAL_SERVER_URL}/scrape?url=${encodeURIComponent(this.certificateUrl)}`);
                         this.data = await response.json();
 
                     } catch (error) {
@@ -180,14 +218,37 @@
                     }
 
                     setTimeout(() => {
-                    this.scrapedContent = {
-                        courseName: '[Language] Web-scraping Test for Extractive and Abstractive Summarizers',
-                        courseDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-                        skills: ['Skill Tag #1', 'Skill Tag #2', 'Skill Tag #3', 'Skill Tag #4'],
-                        issuedTo: 'Firstname Lastname',
-                        dateOfIssue: '29 July 2024',
-                    };
-                    this.showScrapedContent = true;
+                    if(this.data.domain === "credly.com") {
+                        this.scrapedContent = {
+                            courseName: `${this.data.certificateTitle}`,
+                            courseDescription: `${this.data.description}`,
+                            skills: this.data.skills.split(','),
+                            issuedTo: `${this.data.issuedTo}`,
+                            domain: 'credly.com',
+                            issedBy: `${this.data.issuedBy}`,
+                            certificateImage: `${this.data.certificateImage}`,
+                        };
+                        console.log(this.scrapedContent);
+                        this.showScrapedContent = true;
+                    } else if (this.data.domain === "credential.net") {
+                        this.scrapedContent = {
+                            domain: 'credential.net',
+                            certificateImage: `${this.data.certificateImage}`,
+                            courseDescription: `${this.data.description}`,
+                            skills: this.data.skills.split(','),
+                            dateOfIssue: `${this.data.issuedOn}`,
+                            expiresOn: `${this.data.expiresOn}`,
+                            issuerLogo: `${this.data.issuerLogo}`,
+                            courseName: `${this.data.certificateTitle}`,
+                        }                        
+                        this.showScrapedContent = true;
+                    } else {
+
+                        this.showScrapedContent = false;
+                        this.error = "Unable to fetch the data. Please try again in some time.";
+                    }
+                    
+                    
                     }, 1000);
                 } else {
                     this.showScrapedContent = false;
