@@ -1,7 +1,6 @@
 // Styles
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
-import '../assets/fonts/Fixel/fonts.css';
 // Vuetify
 import { createVuetify } from 'vuetify'
 
@@ -25,9 +24,6 @@ export default createVuetify({
     defaultTheme: "customPoapeduTheme",
     themes: {
       customPoapeduTheme,
-    },
-    typography: {
-      fontFamily: 'FixelDisplay, sans-serif',
     },
   }
 })

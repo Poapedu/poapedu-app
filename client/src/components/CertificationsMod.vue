@@ -146,7 +146,6 @@ export default {
 .certifications-container, .stats-container {
   background: #ddd2c4;
   padding: 25px;
-  font-family: "FixelDisplay-Bold" !important;
   border-radius: 10px;
 }
 .certifications-heading {

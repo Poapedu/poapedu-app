@@ -12,7 +12,7 @@ export default {
 
 <style>
 .v-application {
-  background-color: #f5f5f5;
+  background-color: #EAE1D7;
 }
 
 .v-card {

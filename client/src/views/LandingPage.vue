@@ -1,9 +1,11 @@
 <template>
   <v-app>
     <v-app-bar app color="white" elevation="0">
-      <v-toolbar-title class="text-h5 font-weight-bold"
-        >POAPEDU</v-toolbar-title
-      >
+      <v-img
+        src="@/assets/poapedu_logo_black.svg"
+        max-height="40"
+        class="ml-0"
+      ></v-img>
       <v-spacer></v-spacer>
       <v-btn text class="mr-2" @click="goToSignin">Login/Sign Up</v-btn>
     </v-app-bar>

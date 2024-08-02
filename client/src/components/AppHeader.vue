@@ -1,13 +1,11 @@
 <template>
     <v-app-bar app color="#6BA1B4" elevation="1">
       <v-img
-        src="@/assets/logo.png"
+        src="@/assets/poapedu_logo_white.svg"
         max-height="40"
-        max-width="40"
         contain
         class="mr-3"
       ></v-img>
-      <v-toolbar-title class="text-h5 font-weight-bold">POAPEDU</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-row justify="end" class="mr-5">
         <v-menu

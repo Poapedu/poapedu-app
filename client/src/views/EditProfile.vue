@@ -3,7 +3,7 @@
         <AppHeader />
         <v-main class="grey lighten-4">
             <v-container>
-                <v-btn rounded="xl" text @click="goBack">
+                <v-btn rounded="xl" color="primary" text @click="goBack">
                     <v-icon left>mdi-chevron-left</v-icon>
                     Back to Profile
                 </v-btn>
@@ -17,7 +17,7 @@
                                 <v-row align="center">
                                     <v-col><h3>{{ wallet.name }}</h3></v-col>
                                     <v-col class="text-right">
-                                        <v-btn rounded="xl" :color="wallet.connected ? 'primary' : 'default'">
+                                        <v-btn rounded="xl" :color="wallet.connected ? 'secondary' : 'primary'">
                                             {{ wallet.connected ? 'Disconnect' : 'Connect' }}
                                         </v-btn>
                                     </v-col>
@@ -87,7 +87,7 @@
                 </div>
 
 
-                <v-btn rounded="xl" class="mt-15" text @click="goBack">
+                <v-btn rounded="xl" color="primary" class="mt-15" text @click="goBack">
                     <v-icon left>mdi-chevron-left</v-icon>
                     Back to Profile
                 </v-btn>
