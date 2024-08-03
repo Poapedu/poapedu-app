@@ -33,44 +33,34 @@
         </v-col>
       </v-row>
     </v-container> -->
-    <v-container fluid class="pa-0 main-container">
-      <v-row no-gutters>
+    <v-container fluid class="pa-5 mt-10 skills-container">
+      <v-row>
         <!-- Left sidebar -->
         <v-col cols="3">
-          <v-card color="#EAE1D7" class="mb-3" v-for="skill in skills" :key="skill.name">
+          <v-card color="#EAE1D7" class="mb-3" v-for="(item, index) in sidebarItems" :key="index" @click="selectCategory(item)">
             <div class="d-flex flex-no-wrap justify-space-between">
               <div>
-                <v-card-title class="mt-1 text-h4 font-weight-black" v-html="skill.name">
+                <v-card-title class="mt-1 text-h6 font-weight-black" v-html="item.title">
                 </v-card-title>
               </div>
               <div class="d-flex mt-10 mr-3 justify-center">
-                <p class="text-h4 font-weight-black" color="#000">{{ skill.progress }}</p>
+                <p class="text-h6 font-weight-black" color="#000">{{ item.subtitle }}</p>
               </div>
             </div>
           </v-card>
-
-          <v-list dense>
-            <v-list-item 
-              v-for="(item, index) in sidebarItems" 
-              :key="index"
-              @click="selectCategory(item)"
-              :class="{ 'v-list-item--active': item.title === selectedCategory.title }"
-            >
-              <v-list-item-content>
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-                <v-list-item-subtitle>{{ item.subtitle }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
         </v-col>
 
         <!-- Main content area -->
         <v-col cols="9">
           <v-card flat class="main-card">
             <v-card-title class="d-flex justify-space-between align-center">
-              <v-btn icon><v-icon>mdi-chevron-left</v-icon></v-btn>
+              <v-btn icon @click="previousCategory" :disabled="selectedIndex === 0">
+                <v-icon>mdi-chevron-left</v-icon>
+              </v-btn>
               <span>{{ selectedCategory.title }}</span>
-              <v-btn icon><v-icon>mdi-chevron-right</v-icon></v-btn>
+              <v-btn icon @click="nextCategory" :disabled="selectedIndex === sidebarItems.length - 1">
+                <v-icon>mdi-chevron-right</v-icon>
+              </v-btn>
             </v-card-title>
 
             <v-card-text>
@@ -114,18 +104,52 @@
               { color: 'yellow', icon: 'mdi-exit-to-app' },
               { disabled: true, text: '🔒' },
               { disabled: true, text: '🔒' },
-              // ... add more items for WEB DEV
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
             ]
           },
           { 
-            title: 'WEB 3 DEV', 
+            title: 'WEB3 DEV', 
             subtitle: '8/51',
             gridItems: [
               { color: 'blue', icon: 'mdi-ethereum' },
               { color: 'green', icon: 'mdi-bitcoin' },
               { disabled: true, text: '🔒' },
               { disabled: true, text: '🔒' },
-              // ... add more items for WEB 3 DEV
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
             ]
           },
           { 
@@ -136,7 +160,24 @@
               { color: 'cyan', icon: 'mdi-database' },
               { disabled: true, text: '🔒' },
               { disabled: true, text: '🔒' },
-              // ... add more items for DATA ANALYST
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
             ]
           },
           { 
@@ -157,7 +198,14 @@
               { disabled: true, text: '🔒' },
               { disabled: true, text: '🔒' },
               { disabled: true, text: '🔒' },
-              // ... add more items for DATA SCIENTIST
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
+              { disabled: true, text: '🔒' },
             ]
           },
         ],
@@ -169,6 +217,16 @@
       },
       selectCategory(category) {
         this.selectedIndex = this.sidebarItems.findIndex(item => item.title === category.title);
+      },
+      previousCategory() {
+        if (this.selectedIndex > 0) {
+          this.selectedIndex--;
+        }
+      },
+      nextCategory() {
+        if (this.selectedIndex < this.sidebarItems.length - 1) {
+          this.selectedIndex++;
+        }
       }
     },
     mounted() {
