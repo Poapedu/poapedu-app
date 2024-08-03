@@ -1,8 +1,8 @@
 <template>
-  <v-container class="stats-container mb-6">
+  <v-container class="stats-container mb-10">
       <v-row>
         <v-col>
-          <v-card color="#BFD9E2">
+          <v-card color="#BFD9E2" class="stats-card">
             <v-card-text>
               <p class="text-h4 font-weight-black">TOTAL <br>NFTs</p>
               <div class="stat-number">
@@ -12,7 +12,7 @@
           </v-card>
         </v-col>
         <v-col>
-          <v-card color="#BFD9E2">
+          <v-card color="#BFD9E2" class="stats-card">
             <v-card-text>
               <p class="text-h4 font-weight-black">MINTED ON <br>POAPEDU</p>
               <div class="stat-number">
@@ -22,7 +22,7 @@
           </v-card>
         </v-col>
         <v-col>
-          <v-card color="#BFD9E2">
+          <v-card color="#BFD9E2" class="stats-card">
             <v-card-text>
               <p class="text-h4 font-weight-black">SKILLS <br>UNLOCKED</p>
               <div class="stat-number">
@@ -34,7 +34,7 @@
       </v-row>
       
   </v-container>
-  <v-container class="certifications-container">
+  <v-container class="certifications-container mt-6">
     <h2 class="mb-4 certifications-heading">CERTIFICATIONS</h2>
     <v-row>
       <v-col v-for="(cert, index) in visibleCertifications" :key="index" cols="12" sm="6" md="3">
@@ -61,7 +61,7 @@
       </v-col>
     </v-row>
     
-    <v-row justify="center" class="mt-4">
+    <v-row justify="center" class="mt-6 mb-4">
       <v-col cols="12" class="text-center">
         <v-fade-transition>
           <div v-if="!allCertificationsLoaded">
@@ -172,5 +172,9 @@ export default {
   font-size: 85px;
   color: #6BA1B4;
   text-align: right !important
+}
+.stats-card {
+  border: 1px solid #6BA1B4;
+  border-radius: 2%;
 }
 </style>

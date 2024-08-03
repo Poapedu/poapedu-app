@@ -115,8 +115,67 @@
                             <p><strong>Date of Issue:</strong> {{ scrapedContent.dateOfIssue }}</p>
                         </v-card-text>
                     </v-card>
+
+                    <v-card outlined class="mt-2" v-if="data && data.domain === 'linkedin.com'">
+                        <v-alert
+                            density="compact"
+                            text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                            title="Alert!"
+                            type="warning"
+                            class="mb-2"
+                        ></v-alert>
+                        <v-card-text style="font-size:16px;">
+                            <v-img :width="300" class="mt-2 mb-2" :src="scrapedContent.certificateImage" :alt="scrapedContent.courseName" :title="scrapedContent.courseName"></v-img>
+                            <p><strong>Course Name:</strong> {{ scrapedContent.courseName }}</p>
+                            <p><strong>Course Description:</strong> {{ scrapedContent.courseDescription }}</p>
+                            <p><strong>Skills Acquired:</strong></p>
+                            <v-chip-group>
+                                <v-chip v-for="skill in scrapedContent.skills" :key="skill">
+                                {{ skill }}
+                                </v-chip>
+                            </v-chip-group>
+                        </v-card-text>
+                    </v-card>
+
+                    <v-card outlined class="mt-2" v-if="scrapedContent && scrapedContent.domain === 'cloudskillsboost.google'">
+                        <v-alert
+                            density="compact"
+                            text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                            title="Alert!"
+                            type="warning"
+                            class="mb-2"
+                        ></v-alert>
+                        <v-row class="my-0 mt-3" align="center" justify="start" style="flex-wrap: nowrap;overflow-x: auto; white-space: nowrap">
+                            <v-col
+                                v-for="badge in scrapedContent.badges" :key="badge.title"
+                                cols="auto"
+                                class="d-inline-block"
+                                style="flex: none;"
+                                color="surface-variant"
+                                
+                            >
+                                <v-card class="mx-auto" max-width="344" >
+                                    <v-img height="200px" :src="badge.image" cover ></v-img>
+                                    <v-card-title>
+                                        {{ badge.title }}
+                                    </v-card-title>
+                                    <v-card-subtitle>
+                                    <strong>Earned On: </strong> {{ badge.earnedOn }}
+                                    </v-card-subtitle>
+                                    <v-card-text>
+                                        {{  badge.description }}
+                                    </v-card-text>
+                                    <v-card-actions>
+                                    <v-btn rounded="xl" color="#A2D29F" class="mt-4" size="large">
+                                        Mint NFT
+                                    </v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </v-card>
                     
-                    <v-btn rounded="xl" color="#A2D29F" class="mt-4" size="large">Mint NFT</v-btn>
+                    <v-btn v-if="scrapedContent.domain !== 'cloudskillsboost.google'" rounded="xl" color="#A2D29F" class="mt-4" size="large">Mint NFT</v-btn>
                 </div>
 
 
@@ -167,6 +226,7 @@
                     issedBy: '',
                     issuerLogo: '',
                     expiresOn: '',
+                    badges: ''
                 },
                 loading: false,
                 error: null,
@@ -177,12 +237,14 @@
             validateUrl() {
                 const credlyRegex = /^https?:\/\/(www\.)?credly\.com\//i;
                 const credentialNetRegex = /^https?:\/\/(www\.)?credential\.net\//i;
+                const linkedinRegex = /^https?:\/\/(www\.)?linkedin\.com\/learning\/certificates\//i;
+                const cloudBoostRegex =  /^https?:\/\/(www\.)?cloudskillsboost\.google\/public_profiles\//i;
 
                 if (this.certificateUrl) {
-                    if (credlyRegex.test(this.certificateUrl) || credentialNetRegex.test(this.certificateUrl)) {
+                    if (credlyRegex.test(this.certificateUrl) || credentialNetRegex.test(this.certificateUrl) || linkedinRegex.test(this.certificateUrl) || cloudBoostRegex.test(this.certificateUrl)) {
                         return true;
                     } else {
-                        this.urlErrorMessage = 'Please enter a valid Credly or Credential.net URL';
+                        this.urlErrorMessage = 'Not a supported platform. We only support credly or credential.net or linkedin or google cloudboost links at the moment.';
                         this.showUnsupportedAlert = true;
                         return false;
                     }
@@ -224,7 +286,7 @@
                             courseDescription: `${this.data.description}`,
                             skills: this.data.skills.split(','),
                             issuedTo: `${this.data.issuedTo}`,
-                            domain: 'credly.com',
+                            domain: `${this.data.domain}`,
                             issedBy: `${this.data.issuedBy}`,
                             certificateImage: `${this.data.certificateImage}`,
                         };
@@ -232,7 +294,7 @@
                         this.showScrapedContent = true;
                     } else if (this.data.domain === "credential.net") {
                         this.scrapedContent = {
-                            domain: 'credential.net',
+                            domain: `${this.data.domain}`,
                             certificateImage: `${this.data.certificateImage}`,
                             courseDescription: `${this.data.description}`,
                             skills: this.data.skills.split(','),
@@ -242,8 +304,24 @@
                             courseName: `${this.data.certificateTitle}`,
                         }                        
                         this.showScrapedContent = true;
+                    } else if (this.data.domain === "linkedin.com") {
+                        this.scrapedContent = {
+                            domain: `${this.data.domain}`,
+                            certificateImage: `${this.data.certificateImage}`,
+                            courseDescription: `${this.data.description}`,
+                            skills: this.data.skills.split(','),
+                            courseName: `${this.data.certificateTitle}`,
+                        }                        
+                        this.showScrapedContent = true;
+                    }  else if (this.data.domain === "cloudskillsboost.google") {
+                        this.scrapedContent = {
+                            domain: `${this.data.domain}`,
+                            badges: this.data.badges,
+                            issuedTo: `${this.data.issuedTo}`,
+                        }             
+                        this.showScrapedContent = true;
+                        console.log(this.scrapedContent);
                     } else {
-
                         this.showScrapedContent = false;
                         this.error = "Unable to fetch the data. Please try again in some time.";
                     }

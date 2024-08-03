@@ -31,7 +31,7 @@
             <v-img src="../assets/poapedu_logo_white.svg" max-width="120" contain></v-img>
           </v-col>
           <v-col cols="16" class="text-right">
-            <span style="">we are poapedu. our code is serious business, but our footers are a joke.</span>
+            <span style="">we are poapedu. our code is serious business, but our footer is a joke.</span>
           </v-col>
         </v-row>
       </v-container>

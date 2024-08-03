@@ -126,6 +126,78 @@ app.get('/scrape', async (req, res) => {
           certificateTitle
         };
       });
+    }  else if (hostname.includes('linkedin.com') && pageUrl.includes('/certificates/')) {
+      scrapedContent = await page.evaluate(async () => {
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait for dynamic content
+
+        //console.log('Extracting certificate image...');
+        const certificateImageElement = document.querySelector('.certificate-image');
+        const certificateImage = certificateImageElement ? certificateImageElement.src : '';
+
+        //console.log('Extracting issued to...');
+        const issuedToElement = document.querySelector('.certificate-details__recipient-profile');
+        const issuedToHtml = issuedToElement ? issuedToElement.innerHTML : '';
+
+        //console.log('Extracting skills...');
+        const skillsList = Array.from(document.querySelectorAll('.course-skills__skill-list li'))
+        .map(el => el.textContent.trim())
+        .filter(text => text.length > 0) // Remove any empty strings
+        .join(', ');
+        //console.log('Extracting certificate title...');
+        const certificateTitleElement = document.querySelector('.base-search-card__title');
+        const certificateTitle = certificateTitleElement ? certificateTitleElement.textContent.trim() : '';
+
+        //console.log('Extracting description...');
+        const descriptionElement = document.querySelector('.show-more-less-html__markup');
+        const descriptionText = descriptionElement ? descriptionElement.textContent.trim() : '';
+
+        //console.log('Extraction complete.');
+
+        return {
+          domain: 'linkedin.com',
+          certificateImage,
+          issuedTo: issuedToHtml,
+          skills: skillsList,
+          certificateTitle,
+          description: descriptionText
+        };
+      });
+    }  else if (hostname.includes('cloudskillsboost.google') && pageUrl.includes('/public_profiles/')) {
+      scrapedContent = await page.evaluate(async () => {
+        // Wait for content to load
+        await new Promise(resolve => setTimeout(resolve, 3000)); 
+
+        // Extract issuedTo
+        const issuedToElement = document.querySelector('.ql-display-small');
+        const issuedTo = issuedToElement ? issuedToElement.textContent.trim() : '';
+
+        // Extract badges
+        const badges = [];
+        const badgeElements = document.querySelectorAll('.profile-badges .profile-badge');
+
+        for (const badgeElement of badgeElements) {
+          const image = badgeElement.querySelector('img')?.src || '';
+          const title = badgeElement.querySelector('.profile-badge .l-mts')?.textContent.trim() || '';
+          const earnedOn = badgeElement.querySelector('.profile-badge .l-mbs')?.textContent.trim() || '';
+
+          // Extract modal ID from the button
+          const buttonElement = badgeElement.querySelector('ql-button');
+          const modalId = buttonElement ? buttonElement.getAttribute('modal') : '';
+
+          // Extract description from <ql-dialog>
+          const descriptionElement = modalId ? document.querySelector(`ql-dialog#${modalId} p`) : null;
+          const description = descriptionElement ? descriptionElement.textContent.trim() : '';
+
+
+          badges.push({ image, title, earnedOn, description });
+        }
+
+        return {
+          domain: 'cloudskillsboost.google',
+          issuedTo,
+          badges
+        };
+      });
     } else {
       const bodyText = await page.evaluate(() => document.body.innerText);
       scrapedContent = { body: bodyText };

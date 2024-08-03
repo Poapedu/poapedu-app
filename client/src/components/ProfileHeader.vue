@@ -31,7 +31,35 @@
                   <p class="text-subtitle-1 mb-2">
                     <v-icon color="#000" left small>mdi-email</v-icon> firstlastname@gmail.com</p>
                   <div>
-                    <!-- social icons tbd -->
+                    <v-row class="mt-2 d-flex flex-wrap ga-3 ml-1">
+                      <v-icon
+                        color="green-darken-2"
+                        icon="mdi-github"
+                        size="large"
+                        class="profile-icon"
+                      ></v-icon>
+
+                      <v-icon
+                        color="blue-darken-2"
+                        icon="mdi-linkedin"
+                        size="large"
+                        class="profile-icon"
+                      ></v-icon>
+
+                      <v-icon
+                        color="purple-darken-2"
+                        icon="mdi-twitter"
+                        size="large"
+                        class="profile-icon"
+                      ></v-icon>
+
+                      <v-icon
+                        color="teal-darken-2"
+                        icon="mdi-dev-to"
+                        size="large"
+                        class="profile-icon"
+                      ></v-icon>
+                    </v-row>
                   </div>
                 </div>
             </v-col>
@@ -97,5 +125,11 @@
   .profile-bg {
     max-height: 350px;
     background-size: cover;
+  }
+  .profile-icon {
+    background: #BFD9E2;
+    padding: 20px;
+    border: 1px solid #403A32;
+    border-radius: 10%;
   }
   </style>

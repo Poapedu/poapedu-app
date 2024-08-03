@@ -71,16 +71,10 @@
               We're compatible with your favorite platforms
             </h3>
             <v-row justify="center">
-              <v-col cols="auto">
-                <v-avatar size="64" color="grey lighten-2">
-                  <v-img src="../assets/accredible_logo.jpeg"></v-img>
-                </v-avatar>
-              </v-col>
-              <v-col cols="auto">
-                <v-avatar size="64" color="grey lighten-2">
-                  <v-img src="../assets/credly_logo.svg"></v-img>
-                </v-avatar>
-              </v-col>
+                  <v-img src="../assets/accredible-logo.png" alt="Accredible by Credential.net" title="Accredible by Credential.net"></v-img>
+                  <v-img src="../assets/google-cloud-logo.png" alt="Google Cloud Skills Boost" title="Google Cloud Skills Boost"></v-img>
+                  <v-img src="../assets/credly-logo.png" alt="Credly by Pearson" title="Credly by Pearson"></v-img>
+                  <v-img src="../assets/linkedin-learning-logo.png" alt="LinkedIn Learning" title="LinkedIn Learning"></v-img>
             </v-row>
           </v-col>
         </v-row>
