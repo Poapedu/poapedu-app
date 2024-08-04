@@ -6,7 +6,13 @@
       </v-col>
       <v-col cols="12" md="6" class="form-column">
         <v-container class="form-container">
-          <v-card-title class="text-h5">Poapedu</v-card-title>
+          <v-img
+            src="@/assets/poapedu_logo_black.png"
+            alt="Poapedu Logo"
+            contain
+            max-height="80"
+            class="mx-auto mb-4"
+          ></v-img>
           <v-card-subtitle
             >Create your next gen builder's profile</v-card-subtitle
           >
@@ -17,7 +23,16 @@
               required
             ></v-text-field>
             <v-checkbox v-model="rememberMe" label="Remember me"></v-checkbox>
-            <v-btn type="submit" color="primary" block>Sign In</v-btn>
+            <v-btn
+              type="submit"
+              color="#403A32"
+              block
+              :loading="loading"
+              :disabled="loading"
+            >
+              <span v-if="!loading">Sign In</span>
+              <span v-else>Signing In...</span></v-btn
+            >
             <v-alert v-if="emailSent" type="success" dismissible>
               A magic link has been sent to your email address. You may close
               this tab now.
@@ -39,9 +54,10 @@ export default {
   data() {
     return {
       email: "",
-      rememberMe: false, // New data property for remember me checkbox
+      rememberMe: false,
       emailSent: false,
-      errorMessage: "", // New data property for error messages
+      errorMessage: "",
+      loading: false,
     };
   },
   methods: {
@@ -50,6 +66,8 @@ export default {
         this.errorMessage = "Email address is required.";
         return;
       }
+
+      this.loading = true;
 
       const supabase = createClient(
         process.env.VUE_APP_SUPABASE_URL,
@@ -75,6 +93,8 @@ export default {
         this.email = ""; // Clear the email input box
         this.errorMessage = ""; // Clear any previous error messages
       }
+
+      this.loading = false; // Stop loading
     },
     async autoSignIn() {
       const savedSession = localStorage.getItem("supabase.session");
