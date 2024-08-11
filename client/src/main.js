@@ -6,6 +6,7 @@ import vuetify from "./plugins/vuetify";
 //import { loadFonts } from "./plugins/webfontloader";
 import { createClient } from "@supabase/supabase-js";
 import "./scss/main.scss"
+import supabasePlugin from './plugins/supabase'
 
 //loadFonts();
 
@@ -34,5 +35,6 @@ router.beforeEach(async (to, from, next) => {
 const app = createApp(App);
 app.use(router);
 app.use(vuetify);
+app.use(supabasePlugin);
 app.use(store);
 app.mount("#app");

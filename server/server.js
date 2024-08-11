@@ -1,20 +1,22 @@
 const express = require('express');
-const mysql = require('mysql');
 const cors = require('cors');
 const puppeteer = require('puppeteer');
 const { URL } = require('url');
 require('dotenv').config(); 
+const fs = require('fs');
+const mysql = require('mysql2/promise');
+
+const db = mysql.createPool({
+    host: `${process.env.PROD_MYSQL_HOST}`,
+    user: `${process.env.PROD_MYSQL_USER}`,
+    password: `${process.env.PROD_MYSQL_PASS}`,
+    database: `${process.env.PROD_MYSQL_DB}`,
+});
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const db = mysql.createConnection({
-  host: `${process.env.PROD_MYSQL_HOST}`,
-  user: `${process.env.PROD_MYSQL_USER}`,
-  password: `${process.env.PROD_MYSQL_PASS}`,
-  database: `${process.env.PROD_MYSQL_DB}`
-});
+app.use(express.static('public'));
 
 /** 
  * Newsletter subscription API
@@ -22,15 +24,8 @@ const db = mysql.createConnection({
 app.post('/subscribe', (req, res) => {
   const { email } = req.body;
   const sql = 'INSERT INTO NewsletterSubscribers (email) VALUES (?)';
-  db.connect((err) => {
-    if (err) {
-      throw err;
-    }
-    console.log('Connected to MySQL database');
-  });
 
   db.query(sql, [email], (err, result) => {
-    db.end();
     if (err) {
       console.error('Database error:', err);
       res.status(500).json({ success: false, message: 'Subscription failed' });
@@ -40,9 +35,6 @@ app.post('/subscribe', (req, res) => {
   });
 });
 
-/**
- * 
- */
 
 app.get('/scrape', async (req, res) => {
   const { url: pageUrl } = req.query;
@@ -257,7 +249,6 @@ app.post('/skills-webhook', (req, res) => {
     getSkillId(skill, (err, skillId) => {
       if (err) {
         console.error('Error processing skill:', err);
-        db.end();
         return res.status(500).json({ message: 'Database error' });
       }
       
@@ -268,15 +259,9 @@ app.post('/skills-webhook', (req, res) => {
         // All skills processed, now inserting into LearnerSkills
         const insertValues = skillIds.map(id => [userid, id, 'beginner']);
         const insertQuery = 'INSERT INTO LearnerSkills (learner_id, skill_id, proficiency_level) VALUES ?';
-        db.connect((err) => {
-          if (err) {
-            throw err;
-          }
-          console.log('Connected to MySQL database');
-        });
+
         db.query(insertQuery, [insertValues], (err) => {
           // Close the connection after all operations
-          db.end();
           if (err) {
             console.error('Error inserting into LearnerSkills:', err);
             return res.status(500).json({ message: 'Database error' });
@@ -290,6 +275,199 @@ app.post('/skills-webhook', (req, res) => {
         });
       }
     });
+  });
+});
+
+// Save profile endpoint
+app.post('/api/save-profile', (req, res) => {
+  const { learner_id, email, wallet_address, first_name, last_name,
+          profile_photo, profile_banner, one_liner_bio,
+          description, slug } = req.body;
+
+  const query = `
+    INSERT INTO Learners (
+      learner_id, email, wallet_address, first_name, last_name,
+      profile_photo, profile_banner, one_liner_bio,
+      description, slug
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      email = VALUES(email),
+      wallet_address = VALUES(wallet_address),
+      first_name = VALUES(first_name),
+      last_name = VALUES(last_name),
+      profile_photo = VALUES(profile_photo),
+      profile_banner = VALUES(profile_banner),
+      one_liner_bio = VALUES(one_liner_bio),
+      description = VALUES(description),
+      slug = VALUES(slug)
+  `;
+
+  const values = [
+    learner_id, email, wallet_address, first_name, last_name, profile_photo,
+    profile_banner, one_liner_bio, description, slug
+  ];
+
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Error saving profile:', error);
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+    console.log(results);
+    res.json({ success: true, message: 'Profile saved successfully' });
+  });
+});
+
+// Save socials endpoint
+app.post('/api/save-socials', (req, res) => {
+  const { learner_id, linkedin_url, twitter_url, discord_url,
+          github_url, devto_url, website_url } = req.body;
+
+  const query = `
+    INSERT INTO Learners (
+      learner_id, linkedin_url, twitter_url, discord_url,
+      github_url, devto_url, website_url
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      linkedin_url = VALUES(linkedin_url),
+      twitter_url = VALUES(twitter_url),
+      discord_url = VALUES(discord_url),
+      github_url = VALUES(github_url),
+      devto_url = VALUES(devto_url),
+      website_url = VALUES(website_url)
+  `;
+
+  const values = [
+    learner_id, linkedin_url, twitter_url, discord_url,
+    github_url, devto_url, website_url
+  ];
+
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Error saving socials:', error);
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+
+    res.json({ success: true, message: 'Socials saved successfully' });
+  });
+});
+
+// Endpoint to update profile photo
+app.post('/api/update-profile-photo', async (req, res) => {
+  const { learner_id, profile_photo_url } = req.body;
+
+  if (!learner_id || !profile_photo_url) {
+    return res.status(400).json({ success: false, message: 'learner_id and profile_photo_url are required' });
+  }
+  try {
+    const [result] = await db.query(
+      'UPDATE Learners SET profile_photo = ? WHERE learner_id = ?',
+      [profile_photo_url, learner_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'Profile photo updated successfully' });
+  } catch (error) {
+    console.error('Error updating profile photo:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Endpoint to update profile banner
+app.post('/api/update-profile-banner', async (req, res) => {
+  const { learner_id, profile_banner_url } = req.body;
+
+  if (!learner_id || !profile_banner_url) {
+    return res.status(400).json({ success: false, message: 'learner_id and profile_banner_url are required' });
+  }
+
+  try {
+    const [result] = await db.query(
+      'UPDATE Learners SET profile_banner = ? WHERE learner_id = ?',
+      [profile_banner_url, learner_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'Profile banner updated successfully' });
+  } catch (error) {
+    console.error('Error updating profile banner:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.post('/api/learners/check-email', async (req, res) => {
+  const email = req.body.email;
+
+  //console.log('Received email:', req.body.email);
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    // Perform the query using the connection pool
+    const [results] = await db.query('SELECT * FROM Learners WHERE email = ?', [email]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(results[0]);
+  } catch (error) {
+    console.error('Database query error:', error);
+    res.status(500).json({ error: 'Database query error' });
+  }
+});
+
+// Endpoint to create a new user
+app.post('/api/learners', (req, res) => {
+  const {
+    app_metadata,
+    aud,
+    confirmation_sent_at,
+    confirmed_at,
+    email_confirmed_at,
+    id,
+    identities,
+    is_anonymous,
+    last_sign_in_at,
+    phone,
+    recovery_sent_at,
+    role,
+    user_metadata
+  } = req.body;
+
+  // Ensure email is provided
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  const query = `
+    INSERT INTO Learners (
+      app_metadata, aud, confirmation_sent_at, 
+      confirmed_at, email_confirmed_at, supabase_id, identities, is_anonymous, last_sign_in_at, 
+      phone, recovery_sent_at, role, user_metadata
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [
+    JSON.stringify(app_metadata), aud, confirmation_sent_at,
+    confirmed_at, email_confirmed_at, id, JSON.stringify(identities), is_anonymous,
+    last_sign_in_at, phone, recovery_sent_at, role, JSON.stringify(user_metadata)
+  ];
+
+  db.query(query, values, (err, results) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).json({ error: 'Database query error' });
+    }
+
+    res.status(201).json({ message: 'User created successfully', learnerId: results.insertId });
   });
 });
 

@@ -27,7 +27,7 @@
                 {{ user.email }}
               </p>
               <v-divider class="my-3"></v-divider>
-              <v-btn variant="text" rounded> Edit Profile </v-btn>
+              <v-btn variant="text" rounded @click="goToEditProfile"> Edit Profile </v-btn>
               <v-divider class="my-3"></v-divider>
               <v-btn variant="text" rounded @click="signOut"> Sign Out </v-btn>
             </div>
@@ -39,11 +39,8 @@
 </template>
 
 <script>
-import { createClient } from "@supabase/supabase-js";
-const client = createClient(
-  process.env.VUE_APP_SUPABASE_URL,
-  process.env.VUE_APP_SUPABASE_ANON_KEY
-);
+import { supabase } from '@/supabase';
+import { authStore } from '@/store/authStore'
 
 export default {
   name: "AppHeader",
@@ -59,10 +56,15 @@ export default {
       // Implement wallet connection logic here
       console.log("Connecting wallet...");
     },
+    goToEditProfile() {
+        this.$router.push('/edit-profile');
+    },
     async signOut() {
       try {
-        const { error } = await client.auth.signOut();
-        if (error) throw error;
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error
+  
+        authStore.clearSession();
         console.log("User signed out successfully.");
         this.$router.push({ name: "Home" });
       } catch (error) {

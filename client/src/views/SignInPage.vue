@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from '@/supabase';
 
 export default {
   data() {
@@ -69,69 +69,60 @@ export default {
 
       this.loading = true;
 
-      const supabase = createClient(
-        process.env.VUE_APP_SUPABASE_URL,
-        process.env.VUE_APP_SUPABASE_ANON_KEY
-      );
-
-      const { error, session } =
-        (await supabase.auth.signInWithOtp({
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
           email: this.email,
           options: {
             emailRedirectTo: "http://localhost:8080/dashboard",
             data: { app_role: "user" },
           },
-        })) || {}; // Ensure destructuring of possible undefined response
+        });
 
-      if (error) {
-        this.errorMessage = error.message;
-      } else {
-        if (this.rememberMe) {
-          localStorage.setItem("supabase.session", JSON.stringify(session));
+        if (error) {
+          this.errorMessage = error.message;
+        } else {
+          this.emailSent = true;
+          this.email = ""; // Clear the email input box
+          this.errorMessage = ""; // Clear any previous error messages
         }
-        this.emailSent = true;
-        this.email = ""; // Clear the email input box
-        this.errorMessage = ""; // Clear any previous error messages
+      } catch (error) {
+        console.error("Error during sign in:", error);
+        this.errorMessage = "An unexpected error occurred. Please try again.";
+      } finally {
+        this.loading = false;
       }
-
-      this.loading = false; // Stop loading
     },
     async autoSignIn() {
       const savedSession = localStorage.getItem("supabase.session");
       if (savedSession) {
-        const supabase = createClient(
-          process.env.VUE_APP_SUPABASE_URL,
-          process.env.VUE_APP_SUPABASE_ANON_KEY
-        );
-        const session = JSON.parse(savedSession);
+        try {
+          const session = JSON.parse(savedSession);
 
-        // Set the session in Supabase client
-        await supabase.auth.setSession(session);
-        // Validate the session
-        const { error } = await supabase.auth.getUser();
-        if (error) {
+          // Set the session in Supabase client
+          await supabase.auth.setSession(session);
+          // Validate the session
+          const { error } = await supabase.auth.getUser();
+          if (error) {
+            localStorage.removeItem("supabase.session");
+          } else {
+            this.$router.push("/dashboard"); // Redirect to dashboard or another protected route
+          }
+        } catch (error) {
+          console.error("Error parsing saved session:", error);
           localStorage.removeItem("supabase.session");
-        } else {
-          this.$router.push("/dashboard"); // Redirect to dashboard or another protected route
         }
       }
     },
   },
   async created() {
-    const supabase = createClient(
-      process.env.VUE_APP_SUPABASE_URL,
-      process.env.VUE_APP_SUPABASE_ANON_KEY
-    );
-
-    // Check if there's an existing session
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (session) {
-      this.$router.push("/dashboard");
-    } else {
-      this.autoSignIn();
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        this.$router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error checking session:", error);
+      //to display error to user if required.
     }
   },
 };

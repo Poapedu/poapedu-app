@@ -5,8 +5,18 @@
 </template>
 
 <script>
+
+import { useAuth } from '@/composables/useAuth'
+
 export default {
-  name: 'App'
+  name: 'App',
+  setup() {
+    const { user } = useAuth()
+
+    return {
+      user
+    }
+  }
 }
 </script>
 

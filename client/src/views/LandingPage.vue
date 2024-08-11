@@ -1,35 +1,35 @@
 <template>
   <v-app>
-    <v-app-bar app color="white" elevation="0">
-      <v-img
-        src="@/assets/poapedu_logo_black.svg"
-        max-height="40"
-        class="ml-0"
-      ></v-img>
+    <v-toolbar>
+      <!-- Adjust the height to your needs, mine is 40 -->
+      <img class="ml-5" :src="require('@/assets/poapedu_logo_white.svg')" height="40"/>
       <v-spacer></v-spacer>
-      <v-btn text class="mr-2" @click="goToSignin">Login/Sign Up</v-btn>
-    </v-app-bar>
-
+      <v-toolbar-items>
+        <v-btn text class="mr-2" @click="goToSignin">Login/Sign Up</v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
     <v-main class="grey lighten-4">
+      <v-container fluid style="background: #BFD9E2">
+        <v-container class="py-16 mt-4">
+          <v-row>
+            <v-col class="mt-5" cols="6">
+              <h1 class="text-h2 font-weight-bold mb-4">
+                Flaunt what you've achieved
+              </h1>
+              <p class="text-body-1 mb-6">
+                Consolidate all of your certs and NFT badges onto a single
+                coherent builder's profile.
+              </p>
+              <v-btn color="black" dark x-large class="text-capitalize">Get your profile</v-btn
+              >
+            </v-col>
+            <v-col cols="6">
+              <v-img aspect-ratio="16/9" cover src="../assets/landingbanner_placeholder.png"></v-img>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-container>
       <v-container class="py-16 mt-4">
-        <v-row>
-          <v-col cols="12" md="6">
-            <h1 class="text-h2 font-weight-bold mb-4">
-              Flaunt what you've achieved
-            </h1>
-            <p class="text-body-1 mb-6">
-              Consolidate all of your certs and NFT badges onto a single
-              coherent builder's profile.
-            </p>
-            <v-btn color="black" dark x-large class="text-capitalize"
-              >Get your profile</v-btn
-            >
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-img aspect-ratio="16/9" cover src="../assets/section-1-image.jpg"></v-img>
-          </v-col>
-        </v-row>
-
         <v-row class="mt-16 py-16">
           <v-col cols="12" class="text-center">
             <h2 class="text-h4 font-weight-bold mb-2">
@@ -40,16 +40,15 @@
           </v-col>
         </v-row>
 
-        <v-row class="mt-16 py-16">
+        <v-row class="mt-16 py-16" style="background: #403a32;color: #fff;padding: 25px;border-radius: 5px;">
           <v-col cols="12" md="6">
             <h3 class="text-h4 font-weight-bold mb-4">
               Craft a builder's profile with Poapedu
             </h3>
             <p class="text-body-1 mb-6">
-              Seamlessly connect your wallets and retrieve all of your
-              certificates from across platforms
+              Seamlessly connect your wallets and retrieve all of your certificates from across platforms
             </p>
-            <v-list>
+            <v-list style="background: #403a32;">
               <v-list-item v-for="(item, i) in features" :key="i">
                 <v-list-item-icon>
                   <v-icon color="white">mdi-check-circle</v-icon>
@@ -61,7 +60,7 @@
             </v-list>
           </v-col>
           <v-col cols="12" md="6">
-            <v-img aspect-ratio="16/9" cover src="../assets/user-profile.jpg"></v-img>
+            <v-img aspect-ratio="16/9" cover src="../assets/createprofile_placeholder.png"></v-img>
           </v-col>
         </v-row>
 
