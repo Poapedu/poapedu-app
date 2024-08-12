@@ -498,7 +498,7 @@ app.post('/supabase-webhook', async (req, res) => {
   const supabase_id = userData.record.id;
   console.log('User id:', supabase_id)
 
-  const email = userDate.record.email
+  const email = userData.record.email
 
     try {
     // Insert user data into the MySQL database
