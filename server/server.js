@@ -495,6 +495,9 @@ app.post('/supabase-webhook', async (req, res) => {
   const userData = req.body;
   console.log('New row inserted:', userData)
 
+  const userId = userData.record.id;
+  console.log('User id:', userId)
+
 });
 
 const PORT = process.env.PORT || 3000;
