@@ -502,7 +502,7 @@ app.post('/supabase-webhook', async (req, res) => {
 
     try {
     // Insert user data into the MySQL database
-    const [result] = await db.execute('INSERT INTO Learners (supabase_id, email) VALUES (?, ?)', [supabase_id, email]);
+    const [result] = await db.execute('INSERT INTO Learners (supase_id, email) VALUES (?, ?)', [supabase_id, email]);
 
     res.status(200).json({ message: 'User data saved to MySQL', result });
   } catch (error) {
