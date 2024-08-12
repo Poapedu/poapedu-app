@@ -492,8 +492,8 @@ app.post('/supabase-webhook', async (req, res) => {
   //   console.error('Error saving user data to MySQL:', error);
   //   res.status(500).json({ message: 'Internal server error' });
   // }
-  const { data, event } = req.body;
-  console.log('New row inserted:', data)
+  const userData = req.body;
+  console.log('New row inserted:', userData)
 
 });
 
