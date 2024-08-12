@@ -453,12 +453,10 @@ app.post("/api/update-profile-photo", async (req, res) => {
   const { learner_id, profile_photo_url } = req.body;
 
   if (!learner_id || !profile_photo_url) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "learner_id and profile_photo_url are required",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "learner_id and profile_photo_url are required",
+    });
   }
   try {
     const [result] = await db.query(
@@ -484,12 +482,10 @@ app.post("/api/update-profile-banner", async (req, res) => {
   const { learner_id, profile_banner_url } = req.body;
 
   if (!learner_id || !profile_banner_url) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "learner_id and profile_banner_url are required",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "learner_id and profile_banner_url are required",
+    });
   }
 
   try {
@@ -590,18 +586,17 @@ app.post("/api/learners", (req, res) => {
       return res.status(500).json({ error: "Database query error" });
     }
 
-    res
-      .status(201)
-      .json({
-        message: "User created successfully",
-        learnerId: results.insertId,
-      });
+    res.status(201).json({
+      message: "User created successfully",
+      learnerId: results.insertId,
+    });
   });
 });
 
 app.post("/supabase-webhook", async (req, res) => {
   const secret = req.headers["x-supabase-secret"];
 
+  console.log("Secret:", secret);
   if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
     return res.status(401).json({ message: "Unauthorized" });
   }
