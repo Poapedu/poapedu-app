@@ -495,8 +495,20 @@ app.post('/supabase-webhook', async (req, res) => {
   const userData = req.body;
   console.log('New row inserted:', userData)
 
-  const userId = userData.record.id;
-  console.log('User id:', userId)
+  const supabase_id = userData.record.id;
+  console.log('User id:', supabase_id)
+
+  const email = userDate.record.email
+
+    try {
+    // Insert user data into the MySQL database
+    const [result] = await db.execute('INSERT INTO users (supabase_id, email) VALUES (?, ?)', [supabase_id, email]);
+
+    res.status(200).json({ message: 'User data saved to MySQL', result });
+  } catch (error) {
+    console.error('Error saving user data to MySQL:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 
 });
 
