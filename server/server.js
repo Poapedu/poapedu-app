@@ -474,24 +474,27 @@ app.post('/api/learners', (req, res) => {
 app.post('/supabase-webhook', async (req, res) => {
   const secret = req.headers['x-supabase-secret'];
   
-  if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  // if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
+  //   return res.status(401).json({ message: 'Unauthorized' });
+  // }
 
-  const userData = req.body;
+  // const userData = req.body;
 
-  // Extract user information from the webhook payload
-  const { id, email } = userData;
+  // // Extract user information from the webhook payload
+  // const { id, email } = userData;
 
-  try {
-    // Insert user data into the MySQL database
-    const [result] = await db.execute('INSERT INTO users (supabase_id, email) VALUES (?, ?)', [id, email]);
+  // try {
+  //   // Insert user data into the MySQL database
+  //   const [result] = await db.execute('INSERT INTO users (supabase_id, email) VALUES (?, ?)', [id, email]);
 
-    res.status(200).json({ message: 'User data saved to MySQL', result });
-  } catch (error) {
-    console.error('Error saving user data to MySQL:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
+  //   res.status(200).json({ message: 'User data saved to MySQL', result });
+  // } catch (error) {
+  //   console.error('Error saving user data to MySQL:', error);
+  //   res.status(500).json({ message: 'Internal server error' });
+  // }
+  const { data, event } = req.body;
+  console.log('New row inserted:', data)
+
 });
 
 const PORT = process.env.PORT || 3000;
