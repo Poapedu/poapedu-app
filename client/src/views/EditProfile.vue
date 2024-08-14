@@ -33,7 +33,7 @@
           <v-row align="center">
             <v-col cols="2" class="d-flex align-center justify-center">
               <v-img
-                :src="form?.profile_photo || 'https://via.placeholder.com/150'"
+                :src="form.profile_photo || 'https://via.placeholder.com/150'"
                 class="profile-image"
                 @click="openUploadModal('profile_photo')"
               ></v-img>
@@ -58,7 +58,7 @@
               <div class="form-group">
                 <label for="first_name">First Name</label>
                 <v-text-field
-                  id="name"
+                  id="first_name"
                   v-model="form.first_name"
                   hide-details
                   class="custom-input"
@@ -72,7 +72,7 @@
               <div class="form-group">
                 <label for="last_name">Last Name</label>
                 <v-text-field
-                  id="name"
+                  id="last_name"
                   v-model="form.last_name"
                   hide-details
                   class="custom-input"
@@ -233,6 +233,8 @@
 <script>
 import AppHeader from "../components/AppHeader.vue";
 import AppFooter from "../components/AppFooter.vue";
+import { getUserEmail } from "../supabase.js";
+import axios from "axios";
 
 export default {
   name: "EditProfile",
@@ -259,34 +261,34 @@ export default {
       },
     };
   },
-  computed: {
-    dbData() {
-      return this.$store.getters.dbData;
-    },
-  },
-  created() {
+  async created() {
+    this.form.email = await getUserEmail();
     this.initializeFormData();
   },
   methods: {
-    initializeFormData() {
+    async initializeFormData() {
       try {
-        const userData = JSON.parse(this.dbData);
-        if (userData) {
-          this.form = {
-            ...this.form,
-            profile_photo: userData.profile_photo || "",
-            first_name: userData.first_name || "",
-            last_name: userData.last_name || "",
-            email: userData.email || "",
-            wallet_address: userData.wallet_address || "",
-            one_liner_bio: userData.one_liner_bio || "",
-            description: userData.description || "",
-            skills: userData.skills || [],
-            linkedin_url: userData.linkedin_url || "",
-            github_url: userData.github_url || "",
-            twitter_url: userData.twitter_url || "",
-            discord_url: userData.discord_url || "",
-          };
+        const response = await axios.get(`http://localhost:3000/api/user`, {
+          params: { email: this.form.email },
+        });
+
+        console.log('Fetched user data:', response.data);
+
+        if (response.data) {
+          const userData = response.data;
+
+          // Explicitly setting each form field
+          this.$set(this.form, 'profile_photo', userData.profile_photo || "");
+          this.$set(this.form, 'first_name', userData.first_name || "");
+          this.$set(this.form, 'last_name', userData.last_name || "");
+          this.$set(this.form, 'wallet_address', userData.wallet_address || "");
+          this.$set(this.form, 'one_liner_bio', userData.one_liner_bio || "");
+          this.$set(this.form, 'description', userData.description || "");
+          this.$set(this.form, 'skills', userData.skills ? userData.skills.split(',') : []);
+          this.$set(this.form, 'linkedin_url', userData.linkedin_url || "");
+          this.$set(this.form, 'github_url', userData.github_url || "");
+          this.$set(this.form, 'twitter_url', userData.twitter_url || "");
+          this.$set(this.form, 'discord_url', userData.discord_url || "");
         }
       } catch (error) {
         console.error("Error initializing form data:", error);
@@ -304,9 +306,8 @@ export default {
         (error, result) => {
           if (!error && result && result.event === "success") {
             if (type === "profile_photo") {
-              this.form.profile_photo = result.info.secure_url;
+              this.$set(this.form, 'profile_photo', result.info.secure_url);
             }
-            // Handle other types like profile_banner if needed
           } else if (error) {
             console.error("Upload failed:", error);
           }
@@ -347,7 +348,7 @@ export default {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify(this.socialForm),
+              body: JSON.stringify(this.form),
             }
           );
           const data = await response.json();
