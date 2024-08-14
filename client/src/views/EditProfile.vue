@@ -272,23 +272,27 @@ export default {
           params: { email: this.form.email },
         });
 
-        console.log('Fetched user data:', response.data);
+        console.log("Fetched user data:", response.data);
 
         if (response.data) {
           const userData = response.data;
 
           // Explicitly setting each form field
-          this.$set(this.form, 'profile_photo', userData.profile_photo || "");
-          this.$set(this.form, 'first_name', userData.first_name || "");
-          this.$set(this.form, 'last_name', userData.last_name || "");
-          this.$set(this.form, 'wallet_address', userData.wallet_address || "");
-          this.$set(this.form, 'one_liner_bio', userData.one_liner_bio || "");
-          this.$set(this.form, 'description', userData.description || "");
-          this.$set(this.form, 'skills', userData.skills ? userData.skills.split(',') : []);
-          this.$set(this.form, 'linkedin_url', userData.linkedin_url || "");
-          this.$set(this.form, 'github_url', userData.github_url || "");
-          this.$set(this.form, 'twitter_url', userData.twitter_url || "");
-          this.$set(this.form, 'discord_url', userData.discord_url || "");
+          this.$set(this.form, "profile_photo", userData.profile_photo || "");
+          this.$set(this.form, "first_name", userData.first_name || "");
+          this.$set(this.form, "last_name", userData.last_name || "");
+          this.$set(this.form, "wallet_address", userData.wallet_address || "");
+          this.$set(this.form, "one_liner_bio", userData.one_liner_bio || "");
+          this.$set(this.form, "description", userData.description || "");
+          this.$set(
+            this.form,
+            "skills",
+            userData.skills ? userData.skills.split(",") : []
+          );
+          this.$set(this.form, "linkedin_url", userData.linkedin_url || "");
+          this.$set(this.form, "github_url", userData.github_url || "");
+          this.$set(this.form, "twitter_url", userData.twitter_url || "");
+          this.$set(this.form, "discord_url", userData.discord_url || "");
         }
       } catch (error) {
         console.error("Error initializing form data:", error);
@@ -306,7 +310,7 @@ export default {
         (error, result) => {
           if (!error && result && result.event === "success") {
             if (type === "profile_photo") {
-              this.$set(this.form, 'profile_photo', result.info.secure_url);
+              this.$set(this.form, "profile_photo", result.info.secure_url);
             }
           } else if (error) {
             console.error("Upload failed:", error);
