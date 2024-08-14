@@ -345,8 +345,7 @@ app.post("/skills-webhook", (req, res) => {
 // Save profile endpoint
 app.post("/api/save-profile", (req, res) => {
   const {
-    learner_id,
-    email,
+    email, // Take email from the request body, which should be passed from Supabase
     wallet_address,
     first_name,
     last_name,
@@ -357,14 +356,16 @@ app.post("/api/save-profile", (req, res) => {
     slug,
   } = req.body;
 
+  // Determine the value of hasFilled based on first_name and last_name
+  const hasFilled = first_name && last_name ? "1" : "0";
+
   const query = `
     INSERT INTO Learners (
-      learner_id, email, wallet_address, first_name, last_name,
+      email, wallet_address, first_name, last_name,
       profile_photo, profile_banner, one_liner_bio,
-      description, slug
+      description, slug, has_filled
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
-      email = VALUES(email),
       wallet_address = VALUES(wallet_address),
       first_name = VALUES(first_name),
       last_name = VALUES(last_name),
@@ -372,11 +373,11 @@ app.post("/api/save-profile", (req, res) => {
       profile_banner = VALUES(profile_banner),
       one_liner_bio = VALUES(one_liner_bio),
       description = VALUES(description),
-      slug = VALUES(slug)
+      slug = VALUES(slug),
+      has_filled = VALUES(has_filled)
   `;
 
   const values = [
-    learner_id,
     email,
     wallet_address,
     first_name,
@@ -386,6 +387,7 @@ app.post("/api/save-profile", (req, res) => {
     one_liner_bio,
     description,
     slug,
+    hasFilled,
   ];
 
   db.query(query, values, (error, results) => {
@@ -623,20 +625,20 @@ app.post("/supabase-webhook", async (req, res) => {
   }
 });
 
-app.get('/api/user', async (req, res) => {
+app.get("/api/user", async (req, res) => {
   const { email } = req.query;
 
   if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+    return res.status(400).json({ error: "Email is required" });
   }
 
   try {
     // Query the MySQL database using the email
-    const query = 'SELECT * FROM users WHERE email = ?';
+    const query = "SELECT * FROM users WHERE email = ?";
     const [rows] = await db.execute(query, [email]);
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const user = rows[0];
@@ -659,8 +661,8 @@ app.get('/api/user', async (req, res) => {
       hasFilled: user.has_filled,
     });
   } catch (error) {
-    console.error('Database query failed:', error);
-    res.status(500).json({ error: 'Database query failed' });
+    console.error("Database query failed:", error);
+    res.status(500).json({ error: "Database query failed" });
   }
 });
 
