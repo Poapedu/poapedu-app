@@ -12,7 +12,7 @@ const routes = [
     name: "Home",
     component: LandingPage,
     meta: {
-      title: 'poapedu | the only builder\'s profile you need',
+      title: 'poapedu | if you got it, flaunt it',
     }
   },
   {
