@@ -6,8 +6,9 @@ import vuetify from "./plugins/vuetify";
 import { createClient } from "@supabase/supabase-js";
 import "./scss/main.scss"
 import supabasePlugin from './plugins/supabase'
+import { loadFonts } from './plugins/webfontloader'
 
-//loadFonts();
+loadFonts();
 
 const supabase = createClient(
   process.env.VUE_APP_SUPABASE_URL,

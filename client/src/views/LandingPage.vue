@@ -13,14 +13,14 @@
         <v-container class="py-16 mt-4">
           <v-row>
             <v-col class="mt-5" cols="6">
-              <h1 class="text-h2 font-weight-bold mb-4">
-                Flaunt what you've achieved
+              <h1 class="text-h2 font-weight-bold mb-4" style="font-weight:800;font-size:2.8rem">
+                FLAUNT WHAT YOU'VE ACHIEVED
               </h1>
               <p class="text-body-1 mb-6">
                 Consolidate all of your certs and NFT badges onto a single
                 coherent builder's profile.
               </p>
-              <v-btn color="black" dark x-large class="text-capitalize">Get your profile</v-btn
+              <v-btn color="primary" x-large class="text-capitalize">GET YOUR PROFILE</v-btn
               >
             </v-col>
             <v-col cols="6">
@@ -30,13 +30,18 @@
         </v-container>
       </v-container>
       <v-container class="py-16 mt-4">
-        <v-row class="mt-16 py-16">
-          <v-col cols="12" class="text-center">
-            <h2 class="text-h4 font-weight-bold mb-2">
-              You've completed courses on different platforms and chains<br />
+        <v-row class="mt-16 py-16 second-container">
+          <v-col cols="12" md="6">
+            <v-img aspect-ratio="16/9" alt="" title="" cover src="../assets/section1_image.png"></v-img>
+          </v-col>
+          <v-col cols="12" md="6" class="text-left">
+            <h5 class="text-h5 mt-5 font-weight-bold mb-2">
+              You've completed courses on different platforms and chains.
+            </h5>
+            <h5 class="text-h5 mt-10 font-weight-bold mb-2">
               You've got your certs and badges.
-            </h2>
-            <p class="text-h5 font-weight-light">...what's next?</p>
+            </h5>
+            <p class="text-h5 mt-10 font-weight-light text-right">...what's next?</p>
           </v-col>
         </v-row>
 
@@ -60,7 +65,7 @@
             </v-list>
           </v-col>
           <v-col cols="12" md="6">
-            <v-img aspect-ratio="16/9" cover src="../assets/createprofile_placeholder.png"></v-img>
+            <v-img aspect-ratio="16/9" alt="Craft a builder's profile with Poapedu" title="Craft a builder's profile with Poapedu" cover src="../assets/createprofile_placeholder.png"></v-img>
           </v-col>
         </v-row>
 
@@ -124,5 +129,10 @@ export default {
 <style scoped>
 .v-btn {
   text-transform: none !important;
+}
+.second-container {
+  background: #DED2C4;
+  padding: 25px;
+  border-radius: 5px;
 }
 </style>
