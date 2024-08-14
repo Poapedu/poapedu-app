@@ -623,5 +623,46 @@ app.post("/supabase-webhook", async (req, res) => {
   }
 });
 
+app.get('/api/user', async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    // Query the MySQL database using the email
+    const query = 'SELECT * FROM users WHERE email = ?';
+    const [rows] = await db.execute(query, [email]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = rows[0];
+    res.json({
+      wallet_address: user.wallet_address,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      profile_photo: user.profile_photo,
+      profile_banner: user.profile_banner,
+      linkedin_url: user.linkedin_url,
+      twitter_url: user.twitter_url,
+      discord_url: user.discord_url,
+      github_url: user.github_url,
+      devto_url: user.devto_url,
+      website_url: user.website_url,
+      one_liner_bio: user.one_liner_bio,
+      description: user.description,
+      slug: user.slug,
+      bio: user.bio,
+      hasFilled: user.has_filled,
+    });
+  } catch (error) {
+    console.error('Database query failed:', error);
+    res.status(500).json({ error: 'Database query failed' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
