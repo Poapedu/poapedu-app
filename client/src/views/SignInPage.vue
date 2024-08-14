@@ -73,7 +73,7 @@ export default {
         const { error } = await supabase.auth.signInWithOtp({
           email: this.email,
           options: {
-            emailRedirectTo: "http://localhost:8080/dashboard",
+            emailRedirectTo: `${process.env.VUE_APP_LOCAL_SERVER_URL}/dashboard`,
             data: { app_role: "user" },
           },
         });
