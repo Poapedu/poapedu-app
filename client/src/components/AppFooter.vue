@@ -1,9 +1,7 @@
 <template>
     <v-footer color="#6BA1B4" padless>
-      <v-container class="py-10">
-        <v-row class="mt-10 align-center" justify="center">
-
-          <!-- Newsletter subscription -->
+      <v-container class="">
+        <!-- <v-row class="mt-10 align-center" justify="center">
           <v-col cols="6" class="text-center">
             <h3 class="text-h4 font-weight-bold mb-4">Subscribe to our newsletter</h3>
             <p class="mb-4">We'll drop you some goodies and perks once a month or whenever we launch a big feature! Don't hesitate to subscribe!</p>
@@ -23,14 +21,14 @@
               <v-alert v-if="errorMessage" type="error" dismissible>{{ errorMessage }}</v-alert>
             </v-form>
           </v-col>
-        </v-row>
+        </v-row> -->
   
         <!-- Bottom section -->
-        <v-row class="mt-10 align-center">
-          <v-col cols="6">
+        <v-row class="align-center mb-2">
+          <v-col cols="2">
             <v-img src="../assets/poapedu_logo_white.svg" max-width="120" contain></v-img>
           </v-col>
-          <v-col cols="16" class="text-right">
+          <v-col cols="10" class="text-right">
             <span style="">we are poapedu. our code is serious business, but our footer is a joke.</span>
           </v-col>
         </v-row>

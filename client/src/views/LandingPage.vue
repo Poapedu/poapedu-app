@@ -13,14 +13,14 @@
         <v-container class="py-16 mt-4">
           <v-row>
             <v-col class="mt-5" cols="6">
-              <h1 class="text-h2 font-weight-bold mb-4" style="font-weight:800;font-size:2.8rem">
+              <h1 class="text-h2 font-weight-bold mb-4" style="font-family: Onest, sans-serif;font-weight: 900;text-align: left;">
                 FLAUNT WHAT YOU'VE ACHIEVED
               </h1>
               <p class="text-body-1 mb-6">
                 Consolidate all of your certs and NFT badges onto a single
                 coherent builder's profile.
               </p>
-              <v-btn color="primary" x-large class="text-capitalize">GET YOUR PROFILE</v-btn
+              <v-btn color="primary" rounded x-large class="text-capitalize">GET YOUR PROFILE</v-btn
               >
             </v-col>
             <v-col cols="6">
@@ -68,7 +68,6 @@
             <v-img aspect-ratio="16/9" alt="Craft a builder's profile with Poapedu" title="Craft a builder's profile with Poapedu" cover src="../assets/createprofile_placeholder.png"></v-img>
           </v-col>
         </v-row>
-
         <v-row class="mt-16 py-16">
           <v-col cols="12" class="text-center">
             <h3 class="text-h4 font-weight-bold mb-8">
@@ -82,9 +81,19 @@
             </v-row>
           </v-col>
         </v-row>
+        <v-row class="mt-16 poapedus-signup">
+          <v-col cols="12" md="6">
+            <div class="py-16 text-center content">
+              <h2 style="font-weight:700;">READY TO GET POAPEDUS?</h2>
+              <v-btn text class="mt-4" color="primary" rounded @click="goToSignin">Login/Sign Up</v-btn>
+            </div>
+            <div class="character wizard"></div>
+            <div class="character frog"></div>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
-    <v-footer color="grey lighten-3" padless>
+    <!-- <v-footer color="grey lighten-3" padless>
       <v-container>
         <v-row align="center" class="py-16" no-gutters>
           <v-col cols="12" md="6">
@@ -98,7 +107,7 @@
           </v-col>
         </v-row>
       </v-container>
-    </v-footer>
+    </v-footer> -->
   </v-app>
   <AppFooter />
 </template>
@@ -134,5 +143,65 @@ export default {
   background: #DED2C4;
   padding: 25px;
   border-radius: 5px;
+}
+
+.poapedus-signup {
+  background-color: #b8e2f2;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signup-button {
+  background-color: #5c9ead;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.character {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.wizard {
+  left: 0;
+  bottom: -20px;
+  background-image: url('../assets/left-frog.png');
+}
+
+.frog {
+  right: -15px;
+  top: 0;
+  background-image: url('../assets/right-frog.png');
+}
+
+@media (max-width: 768px) {
+  .character {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .character {
+    width: 40px;
+    height: 40px;
+  }  
+  .signup-button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
 }
 </style>

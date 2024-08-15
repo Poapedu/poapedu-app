@@ -2,7 +2,7 @@
   <v-app>
     <v-row no-gutters>
       <v-col cols="12" md="6">
-        <v-img src="@/assets/SignInPhoto.jpg" height="100vh" cover></v-img>
+        <v-img src="@/assets/login_featureimage.png" height="100vh" cover></v-img>
       </v-col>
       <v-col cols="12" md="6" class="form-column">
         <v-container class="form-container">
