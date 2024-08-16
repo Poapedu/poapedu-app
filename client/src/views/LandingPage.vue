@@ -13,7 +13,7 @@
         <v-container class="py-16 mt-4">
           <v-row>
             <v-col class="mt-5" cols="6">
-              <h1 class="text-h2 font-weight-bold mb-4" style="font-family: Onest, sans-serif;font-weight: 900;text-align: left;">
+              <h1 class="text-h2 font-weight-bold mb-4" style="font-weight: 900;text-align: left;">
                 FLAUNT WHAT YOU'VE ACHIEVED
               </h1>
               <p class="text-body-1 mb-6">
