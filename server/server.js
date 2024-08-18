@@ -634,7 +634,7 @@ app.get("/api/user", async (req, res) => {
 
   try {
     // Query the MySQL database using the email
-    const query = "SELECT * FROM users WHERE email = ?";
+    const query = "SELECT * FROM Learners WHERE email = ?";
     const [rows] = await db.execute(query, [email]);
 
     if (rows.length === 0) {
