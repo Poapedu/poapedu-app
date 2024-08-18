@@ -27,7 +27,13 @@
                 {{ user.email }}
               </p>
               <v-divider class="my-3"></v-divider>
-              <v-btn variant="text" rounded @click="goToEditProfile"> Edit Profile </v-btn>
+              <v-btn variant="text" rounded @click="goToEditProfile">
+                Edit Profile
+              </v-btn>
+              <v-divider class="my-3"></v-divider>
+              <v-btn variant="text" rounded @click="goToMintNFT">
+                Mint NFTs
+              </v-btn>
               <v-divider class="my-3"></v-divider>
               <v-btn variant="text" rounded @click="signOut"> Sign Out </v-btn>
             </div>
@@ -39,8 +45,8 @@
 </template>
 
 <script>
-import { supabase } from '@/supabase';
-import { authStore } from '@/store/authStore'
+import { supabase } from "@/supabase";
+import { authStore } from "@/store/authStore";
 
 export default {
   name: "AppHeader",
@@ -57,13 +63,16 @@ export default {
       console.log("Connecting wallet...");
     },
     goToEditProfile() {
-        this.$router.push('/edit-profile');
+      this.$router.push("/edit-profile");
+    },
+    goToMintNFT() {
+      this.$router.push("/mint-nft");
     },
     async signOut() {
       try {
         const { error } = await supabase.auth.signOut();
-        if (error) throw error
-  
+        if (error) throw error;
+
         authStore.clearSession();
         console.log("User signed out successfully.");
         this.$router.push({ name: "Home" });
