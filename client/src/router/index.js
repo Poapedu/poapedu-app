@@ -4,7 +4,7 @@ import UserDashboard from "@/views/UserDashboard.vue";
 import EditProfile from "@/views/EditProfile.vue";
 import SignInPage from "@/views/SignInPage.vue";
 import MintNFT from "@/views/MintNFT.vue";
-import { supabase } from '@/supabase'
+import { supabase } from "@/supabase";
 
 const routes = [
   {
@@ -12,8 +12,8 @@ const routes = [
     name: "Home",
     component: LandingPage,
     meta: {
-      title: 'poapedu | if you got it, flaunt it',
-    }
+      title: "poapedu | if you got it, flaunt it",
+    },
   },
   {
     path: "/dashboard",
@@ -39,9 +39,9 @@ const routes = [
     component: SignInPage,
   },
   {
-    path: '/profile/:username',
-    name: 'PublicProfile',
-    component: () => import('@/views/PublicProfile.vue')
+    path: "/profile/:username",
+    name: "PublicProfile",
+    component: () => import("@/views/PublicProfile.vue"),
   },
 ];
 
@@ -51,20 +51,21 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-
   const { title } = to.meta;
-  const defaultTitle = 'poapedu | the only builder\'s profile you need';
+  const defaultTitle = "poapedu | the only builder's profile you need";
 
   document.title = title || defaultTitle;
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
   if (requiresAuth && !session) {
-    next('/') // Redirect to login if not authenticated
+    next("/"); // Redirect to login if not authenticated
   } else {
-    next()
+    next();
   }
-})
+});
 
 export default router;
