@@ -458,8 +458,8 @@ export default {
   bottom: 25px; /* Adjust to position the button near the bottom */
   right: 100px; /* Adjust to position the button near the right edge */ /* Optional: semi-transparent background */
   color: black;
-  background-color: #EAE1D7;
-  font-weight: bold; 
+  background-color: #eae1d7;
+  font-weight: bold;
 }
 
 .profile-info {
