@@ -10,277 +10,301 @@
             </v-btn>
           </v-col>
         </v-row>
-        <h2 class="mt-10">Mint NFT from Wallets</h2>
 
-        <v-row>
-          <v-col v-for="wallet in wallets" :key="wallet.name" cols="12" sm="6">
-            <v-card variant="plain">
-              <v-card-text>
-                <v-row align="center">
-                  <v-col
-                    ><h3>{{ wallet.name }}</h3></v-col
-                  >
-                  <v-col class="text-right">
-                    <v-btn
-                      rounded="xl"
-                      :color="wallet.connected ? 'secondary' : 'primary'"
+        <v-container class="mint-wallet rounded-lg">
+          <h2>Mint NFT from Wallets</h2>
+          <v-row>
+            <v-col
+              v-for="wallet in wallets"
+              :key="wallet.name"
+              cols="12"
+              sm="6"
+            >
+              <v-card variant="plain">
+                <v-card-text>
+                  <v-row align="center">
+                    <v-col
+                      ><h3>{{ wallet.name }}</h3></v-col
                     >
-                      {{ wallet.connected ? "Disconnect" : "Connect" }}
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
+                    <v-col class="text-right">
+                      <v-btn
+                        rounded="xl"
+                        :color="wallet.connected ? 'secondary' : 'primary'"
+                      >
+                        {{ wallet.connected ? "Disconnect" : "Connect" }}
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
 
-        <v-alert v-if="detectedNFTs.length > 0" type="info" class="mt-4">
-          {{ detectedNFTs.length }} NFTs from
-          {{ detectedNFTs[0].wallet }} detected!
-        </v-alert>
+          <v-alert v-if="detectedNFTs.length > 0" type="info" class="mt-4">
+            {{ detectedNFTs.length }} NFTs from
+            {{ detectedNFTs[0].wallet }} detected!
+          </v-alert>
 
-        <v-row class="mt-4">
-          <v-col v-for="nft in detectedNFTs" :key="nft.name" cols="12" sm="4">
-            <v-card outlined height="100%">
-              <v-card-text class="text-center">
-                <v-img
-                  :src="nft.image"
-                  height="150"
-                  contain
-                  class="grey lighten-2"
-                ></v-img>
-                <p class="mt-2 mb-2" style="font-size: 20px">{{ nft.name }}</p>
-                <v-btn rounded="xl" color="primary" block>Mint NFT</v-btn>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
+          <v-row class="mt-4">
+            <v-col v-for="nft in detectedNFTs" :key="nft.name" cols="12" sm="4">
+              <v-card outlined height="100%">
+                <v-card-text class="text-center">
+                  <v-img
+                    :src="nft.image"
+                    height="150"
+                    contain
+                    class="grey lighten-2"
+                  ></v-img>
+                  <p class="mt-2 mb-2" style="font-size: 20px">
+                    {{ nft.name }}
+                  </p>
+                  <v-btn rounded="xl" color="#9AD393" block>Mint NFT</v-btn>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
         <v-divider class="mint-nft-divider"></v-divider>
 
-        <h2 class="mt-6">Mint NFT from Certificates</h2>
+        <v-container class="mint-wallet rounded-lg">
+          <h2>Mint NFT from Certificates</h2>
+          <v-col cols="12" md="12">
+            <div class="form-group">
+              <label for="certificate">Insert Certificate URL</label>
+              <v-text-field
+                id="certificate"
+                hide-details
+                class="mt-3"
+                bg-color="white"
+                density="compact"
+                variant="solo"
+              ></v-text-field>
+            </div>
+          </v-col>
+          <v-text-field
+            class="mt-3"
+            label="Insert Certificate URL"
+            v-model="certificateUrl"
+            :error-messages="urlErrorMessage"
+            append-icon="mdi-sync"
+            @click:append="generateData"
+            @input="clearErrors"
+          ></v-text-field>
 
-        <v-text-field
-          class="mt-3"
-          label="Insert Certificate URL"
-          v-model="certificateUrl"
-          :error-messages="urlErrorMessage"
-          append-icon="mdi-sync"
-          @click:append="generateData"
-          @input="clearErrors"
-        ></v-text-field>
+          <v-progress-circular
+            class="mb-3"
+            v-if="loading"
+            indeterminate
+            color="primary"
+          ></v-progress-circular>
+          <v-alert v-if="showUnsupportedAlert" type="warning" class="mt-2">
+            This platform is not supported yet.
+          </v-alert>
 
-        <v-progress-circular
-          class="mb-3"
-          v-if="loading"
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
-        <v-alert v-if="showUnsupportedAlert" type="warning" class="mt-2">
-          This platform is not supported yet.
-        </v-alert>
-
-        <div v-if="showScrapedContent">
-          <h3 class="mt-4">Certificate Information</h3>
-          <v-card
-            outlined
-            class="mt-2"
-            v-if="data && data.domain === 'credly.com'"
-          >
-            <v-alert
-              density="compact"
-              text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
-              title="Alert!"
-              type="warning"
-              class="mb-2"
-            ></v-alert>
-            <v-card-text style="font-size: 16px">
-              <v-img
-                :width="300"
-                class="mt-2 mb-2"
-                :src="scrapedContent.certificateImage"
-                :alt="scrapedContent.courseName"
-                :title="scrapedContent.courseName"
-              ></v-img>
-              <p>
-                <strong>Course Name:</strong> {{ scrapedContent.courseName }}
-              </p>
-              <p>
-                <strong>Course Description:</strong>
-                {{ scrapedContent.courseDescription }}
-              </p>
-              <p><strong>Skills Acquired:</strong></p>
-              <v-chip-group>
-                <v-chip v-for="skill in scrapedContent.skills" :key="skill">
-                  {{ skill }}
-                </v-chip>
-              </v-chip-group>
-              <p>
-                <strong>Issued To:</strong
-                ><span v-html="scrapedContent.issuedTo"></span>
-              </p>
-              <p
-                v-if="
-                  scrapedContent.dateOfIssue != '' ||
-                  scrapedContent.dateOfIssue != null
-                "
-              >
-                <strong>Date of Issue:</strong> {{ scrapedContent.dateOfIssue }}
-              </p>
-            </v-card-text>
-          </v-card>
-
-          <v-card
-            outlined
-            class="mt-2"
-            v-if="data && data.domain === 'credential.net'"
-          >
-            <v-alert
-              density="compact"
-              text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
-              title="Alert!"
-              type="warning"
-              class="mb-2"
-            ></v-alert>
-            <v-card-text style="font-size: 16px">
-              <v-img
-                :width="300"
-                class="mt-2 mb-2"
-                :src="scrapedContent.certificateImage"
-                :alt="scrapedContent.courseName"
-                :title="scrapedContent.courseName"
-              ></v-img>
-              <p>
-                <strong>Course Name:</strong> {{ scrapedContent.courseName }}
-              </p>
-              <p>
-                <strong>Course Description:</strong>
-                {{ scrapedContent.courseDescription }}
-              </p>
-              <p><strong>Skills Acquired:</strong></p>
-              <v-chip-group>
-                <v-chip v-for="skill in scrapedContent.skills" :key="skill">
-                  {{ skill }}
-                </v-chip>
-              </v-chip-group>
-              <p>
-                <strong>Issued To:</strong
-                ><span v-html="scrapedContent.issuedTo"></span>
-              </p>
-              <p>
-                <strong>Issued By:</strong
-                ><span v-html="scrapedContent.issuedBy"></span>
-              </p>
-              <p>
-                <strong>Expires On:</strong
-                ><span v-html="scrapedContent.expiresOn"></span>
-              </p>
-              <p>
-                <strong>Date of Issue:</strong> {{ scrapedContent.dateOfIssue }}
-              </p>
-            </v-card-text>
-          </v-card>
-
-          <v-card
-            outlined
-            class="mt-2"
-            v-if="data && data.domain === 'linkedin.com'"
-          >
-            <v-alert
-              density="compact"
-              text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
-              title="Alert!"
-              type="warning"
-              class="mb-2"
-            ></v-alert>
-            <v-card-text style="font-size: 16px">
-              <v-img
-                :width="300"
-                class="mt-2 mb-2"
-                :src="scrapedContent.certificateImage"
-                :alt="scrapedContent.courseName"
-                :title="scrapedContent.courseName"
-              ></v-img>
-              <p>
-                <strong>Course Name:</strong> {{ scrapedContent.courseName }}
-              </p>
-              <p>
-                <strong>Course Description:</strong>
-                {{ scrapedContent.courseDescription }}
-              </p>
-              <p><strong>Skills Acquired:</strong></p>
-              <v-chip-group>
-                <v-chip v-for="skill in scrapedContent.skills" :key="skill">
-                  {{ skill }}
-                </v-chip>
-              </v-chip-group>
-            </v-card-text>
-          </v-card>
-
-          <v-card
-            outlined
-            class="mt-2"
-            v-if="
-              scrapedContent &&
-              scrapedContent.domain === 'cloudskillsboost.google'
-            "
-          >
-            <v-alert
-              density="compact"
-              text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
-              title="Alert!"
-              type="warning"
-              class="mb-2"
-            ></v-alert>
-            <v-row
-              class="my-0 mt-3"
-              align="center"
-              justify="start"
-              style="flex-wrap: nowrap; overflow-x: auto; white-space: nowrap"
+          <div v-if="showScrapedContent">
+            <h3 class="mt-4">Certificate Information</h3>
+            <v-card
+              outlined
+              class="mt-2"
+              v-if="data && data.domain === 'credly.com'"
             >
-              <v-col
-                v-for="badge in scrapedContent.badges"
-                :key="badge.title"
-                cols="auto"
-                class="d-inline-block"
-                style="flex: none"
-                color="surface-variant"
-              >
-                <v-card class="mx-auto" max-width="344">
-                  <v-img height="200px" :src="badge.image" cover></v-img>
-                  <v-card-title>
-                    {{ badge.title }}
-                  </v-card-title>
-                  <v-card-subtitle>
-                    <strong>Earned On: </strong> {{ badge.earnedOn }}
-                  </v-card-subtitle>
-                  <v-card-text>
-                    {{ badge.description }}
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-btn
-                      rounded="xl"
-                      color="#A2D29F"
-                      class="mt-4"
-                      size="large"
-                    >
-                      Mint NFT
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-card>
+              <v-alert
+                density="compact"
+                text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                title="Alert!"
+                type="warning"
+                class="mb-2"
+              ></v-alert>
+              <v-card-text style="font-size: 16px">
+                <v-img
+                  :width="300"
+                  class="mt-2 mb-2"
+                  :src="scrapedContent.certificateImage"
+                  :alt="scrapedContent.courseName"
+                  :title="scrapedContent.courseName"
+                ></v-img>
+                <p>
+                  <strong>Course Name:</strong> {{ scrapedContent.courseName }}
+                </p>
+                <p>
+                  <strong>Course Description:</strong>
+                  {{ scrapedContent.courseDescription }}
+                </p>
+                <p><strong>Skills Acquired:</strong></p>
+                <v-chip-group>
+                  <v-chip v-for="skill in scrapedContent.skills" :key="skill">
+                    {{ skill }}
+                  </v-chip>
+                </v-chip-group>
+                <p>
+                  <strong>Issued To:</strong
+                  ><span v-html="scrapedContent.issuedTo"></span>
+                </p>
+                <p
+                  v-if="
+                    scrapedContent.dateOfIssue != '' ||
+                    scrapedContent.dateOfIssue != null
+                  "
+                >
+                  <strong>Date of Issue:</strong>
+                  {{ scrapedContent.dateOfIssue }}
+                </p>
+              </v-card-text>
+            </v-card>
 
-          <v-btn
-            v-if="scrapedContent.domain !== 'cloudskillsboost.google'"
-            rounded="xl"
-            color="#A2D29F"
-            class="mt-4"
-            size="large"
-            >Mint NFT</v-btn
-          >
-        </div>
+            <v-card
+              outlined
+              class="mt-2"
+              v-if="data && data.domain === 'credential.net'"
+            >
+              <v-alert
+                density="compact"
+                text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                title="Alert!"
+                type="warning"
+                class="mb-2"
+              ></v-alert>
+              <v-card-text style="font-size: 16px">
+                <v-img
+                  :width="300"
+                  class="mt-2 mb-2"
+                  :src="scrapedContent.certificateImage"
+                  :alt="scrapedContent.courseName"
+                  :title="scrapedContent.courseName"
+                ></v-img>
+                <p>
+                  <strong>Course Name:</strong> {{ scrapedContent.courseName }}
+                </p>
+                <p>
+                  <strong>Course Description:</strong>
+                  {{ scrapedContent.courseDescription }}
+                </p>
+                <p><strong>Skills Acquired:</strong></p>
+                <v-chip-group>
+                  <v-chip v-for="skill in scrapedContent.skills" :key="skill">
+                    {{ skill }}
+                  </v-chip>
+                </v-chip-group>
+                <p>
+                  <strong>Issued To:</strong
+                  ><span v-html="scrapedContent.issuedTo"></span>
+                </p>
+                <p>
+                  <strong>Issued By:</strong
+                  ><span v-html="scrapedContent.issuedBy"></span>
+                </p>
+                <p>
+                  <strong>Expires On:</strong
+                  ><span v-html="scrapedContent.expiresOn"></span>
+                </p>
+                <p>
+                  <strong>Date of Issue:</strong>
+                  {{ scrapedContent.dateOfIssue }}
+                </p>
+              </v-card-text>
+            </v-card>
+
+            <v-card
+              outlined
+              class="mt-2"
+              v-if="data && data.domain === 'linkedin.com'"
+            >
+              <v-alert
+                density="compact"
+                text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                title="Alert!"
+                type="warning"
+                class="mb-2"
+              ></v-alert>
+              <v-card-text style="font-size: 16px">
+                <v-img
+                  :width="300"
+                  class="mt-2 mb-2"
+                  :src="scrapedContent.certificateImage"
+                  :alt="scrapedContent.courseName"
+                  :title="scrapedContent.courseName"
+                ></v-img>
+                <p>
+                  <strong>Course Name:</strong> {{ scrapedContent.courseName }}
+                </p>
+                <p>
+                  <strong>Course Description:</strong>
+                  {{ scrapedContent.courseDescription }}
+                </p>
+                <p><strong>Skills Acquired:</strong></p>
+                <v-chip-group>
+                  <v-chip v-for="skill in scrapedContent.skills" :key="skill">
+                    {{ skill }}
+                  </v-chip>
+                </v-chip-group>
+              </v-card-text>
+            </v-card>
+
+            <v-card
+              outlined
+              class="mt-2"
+              v-if="
+                scrapedContent &&
+                scrapedContent.domain === 'cloudskillsboost.google'
+              "
+            >
+              <v-alert
+                density="compact"
+                text="Your certificate information is only stored once you Mint NFT. Ensure to Mint NFT to save your skill information along with the NFT."
+                title="Alert!"
+                type="warning"
+                class="mb-2"
+              ></v-alert>
+              <v-row
+                class="my-0 mt-3"
+                align="center"
+                justify="start"
+                style="flex-wrap: nowrap; overflow-x: auto; white-space: nowrap"
+              >
+                <v-col
+                  v-for="badge in scrapedContent.badges"
+                  :key="badge.title"
+                  cols="auto"
+                  class="d-inline-block"
+                  style="flex: none"
+                  color="surface-variant"
+                >
+                  <v-card class="mx-auto" max-width="344">
+                    <v-img height="200px" :src="badge.image" cover></v-img>
+                    <v-card-title>
+                      {{ badge.title }}
+                    </v-card-title>
+                    <v-card-subtitle>
+                      <strong>Earned On: </strong> {{ badge.earnedOn }}
+                    </v-card-subtitle>
+                    <v-card-text>
+                      {{ badge.description }}
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-btn
+                        rounded="xl"
+                        color="#9AD393"
+                        class="mt-4"
+                        size="large"
+                      >
+                        Mint NFT
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-card>
+
+            <v-btn
+              v-if="scrapedContent.domain !== 'cloudskillsboost.google'"
+              rounded="xl"
+              color="#9AD393"
+              class="mt-4"
+              size="large"
+              >Mint NFT</v-btn
+            >
+          </div>
+        </v-container>
         <v-row class="back-button-row">
           <v-col cols="12" class="d-flex align-start">
             <v-btn class="back-button" @click="goBack">
@@ -312,9 +336,10 @@ export default {
         { name: "Phantom", connected: false },
       ],
       detectedNFTs: [
-        // { name: "Intro to Solidity", wallet: "MetaMask", image: "" },
-        // { name: "Intro to MetaMask", wallet: "MetaMask", image: "" },
-        // { name: "Advanced Contracts", wallet: "MetaMask", image: "" },
+        { name: "Intro to Solidity", wallet: "MetaMask", image: "" },
+        { name: "Intro to MetaMask", wallet: "MetaMask", image: "" },
+        { name: "Advanced Contracts", wallet: "MetaMask", image: "" },
+        { name: "Intro to Phantom", wallet: "MetaMask", image: "" },
       ],
       certificateUrl:
         "https://www.credly.com/badges/de7637c4-4f35-4e1a-9177-36ba3498496a/public_url",
@@ -475,5 +500,9 @@ export default {
 
 .back-button v-icon {
   margin-right: 5px;
+}
+
+.mint-wallet {
+  background-color: #ded2c4;
 }
 </style>
