@@ -363,7 +363,7 @@ app.post("/api/save-profile", (req, res) => {
     INSERT INTO Learners (
       email, wallet_address, first_name, last_name,
       profile_photo, profile_banner, one_liner_bio,
-      description, slug, has_filled
+      description, slug, hasFilled
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
       wallet_address = VALUES(wallet_address),
@@ -374,7 +374,7 @@ app.post("/api/save-profile", (req, res) => {
       one_liner_bio = VALUES(one_liner_bio),
       description = VALUES(description),
       slug = VALUES(slug),
-      has_filled = VALUES(has_filled)
+      hasFilled = VALUES(hasFilled)
   `;
 
   const values = [
@@ -658,7 +658,7 @@ app.get("/api/user", async (req, res) => {
       description: user.description,
       slug: user.slug,
       bio: user.bio,
-      hasFilled: user.has_filled,
+      hasFilled: user.hasFilled,
     });
   } catch (error) {
     console.error("Database query failed:", error);
