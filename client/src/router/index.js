@@ -4,7 +4,7 @@ import UserDashboard from "@/views/UserDashboard.vue";
 import EditProfile from "@/views/EditProfile.vue";
 import SignInPage from "@/views/SignInPage.vue";
 import MintNFT from "@/views/MintNFT.vue";
-//import { supabase } from "@/supabase";
+import { supabase } from "@/supabase";
 
 const routes = [
   {
@@ -50,22 +50,22 @@ const router = createRouter({
   routes,
 });
 
-// router.beforeEach(async (to, from, next) => {
-//   const { title } = to.meta;
-//   const defaultTitle = "poapedu | the only builder's profile you need";
+router.beforeEach(async (to, from, next) => {
+  const { title } = to.meta;
+  const defaultTitle = "poapedu | the only builder's profile you need";
 
-//   document.title = title || defaultTitle;
+  document.title = title || defaultTitle;
 
-//   const {
-//     data: { session },
-//   } = await supabase.auth.getSession();
-//   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
-//   if (requiresAuth && !session) {
-//     next("/"); // Redirect to login if not authenticated
-//   } else {
-//     next();
-//   }
-// });
+  if (requiresAuth && !session) {
+    next("/"); // Redirect to login if not authenticated
+  } else {
+    next();
+  }
+});
 
 export default router;

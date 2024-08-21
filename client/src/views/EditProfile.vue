@@ -1,9 +1,10 @@
 <template>
   <v-app>
+    <!-- Main application wrapper -->
     <AppHeader />
     <v-main class="grey lighten-4">
       <v-container>
-        <!-- Back Button -->
+        <!-- Back button to return to profile -->
         <v-row class="back-button-row">
           <v-col cols="12" class="d-flex align-start">
             <v-btn class="back-button" @click="goBack">
@@ -225,6 +226,15 @@
           </v-col>
         </v-row>
       </v-container>
+
+      <v-snackbar
+        v-model="snackbar.show"
+        :color="snackbar.color"
+        timeout="3000"
+        top
+      >
+        {{ snackbar.text }}
+      </v-snackbar>
     </v-main>
     <AppFooter />
   </v-app>
@@ -242,9 +252,17 @@ export default {
     AppHeader,
     AppFooter,
   },
+  mounted() {
+    // Dynamically load the Cloudinary script for image uploads
+    const script = document.createElement("script");
+    script.src = "https://widget.cloudinary.com/v2.0/global/all.js";
+    script.onload = this.initializeCloudinary;
+    document.head.appendChild(script);
+  },
   data() {
     return {
       valid: false,
+      // Form data object containing user profile information
       form: {
         profile_photo: "",
         first_name: "",
@@ -259,6 +277,12 @@ export default {
         twitter_url: "",
         discord_url: "",
       },
+      // Snackbar configuration for displaying notifications
+      snackbar: {
+        show: false,
+        text: '',
+        color: '',
+      },
     };
   },
   async created() {
@@ -266,9 +290,10 @@ export default {
     this.initializeFormData();
   },
   methods: {
+    // Fetch and populate form data from the server
     async initializeFormData() {
       try {
-        const response = await axios.get(`http://localhost:3000/api/user`, {
+        const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user`, {
           params: { email: this.form.email },
         });
 
@@ -277,47 +302,49 @@ export default {
         if (response.data) {
           const userData = response.data;
 
-          // Explicitly setting each form field
-          this.$set(this.form, "profile_photo", userData.profile_photo || "");
-          this.$set(this.form, "first_name", userData.first_name || "");
-          this.$set(this.form, "last_name", userData.last_name || "");
-          this.$set(this.form, "wallet_address", userData.wallet_address || "");
-          this.$set(this.form, "one_liner_bio", userData.one_liner_bio || "");
-          this.$set(this.form, "description", userData.description || "");
-          this.$set(
-            this.form,
-            "skills",
-            userData.skills ? userData.skills.split(",") : []
-          );
-          this.$set(this.form, "linkedin_url", userData.linkedin_url || "");
-          this.$set(this.form, "github_url", userData.github_url || "");
-          this.$set(this.form, "twitter_url", userData.twitter_url || "");
-          this.$set(this.form, "discord_url", userData.discord_url || "");
+          // // Explicitly setting each form field
+          // this.$set(this.form, "profile_photo", userData.profile_photo || "");
+          // this.$set(this.form, "first_name", userData.first_name || "");
+          // this.$set(this.form, "last_name", userData.last_name || "");
+          // this.$set(this.form, "wallet_address", userData.wallet_address || "");
+          // this.$set(this.form, "one_liner_bio", userData.one_liner_bio || "");
+          // this.$set(this.form, "description", userData.description || "");
+          // this.$set(
+          //   this.form,
+          //   "skills",
+          //   userData.skills ? userData.skills.split(",") : []
+          // );
+          // this.$set(this.form, "linkedin_url", userData.linkedin_url || "");
+          // this.$set(this.form, "github_url", userData.github_url || "");
+          // this.$set(this.form, "twitter_url", userData.twitter_url || "");
+          // this.$set(this.form, "discord_url", userData.discord_url || "");
+
+          // Update the entire form object with fetched user data
+          this.form = {
+            ...this.form,
+            profile_photo: userData.profile_photo || "",
+            first_name: userData.first_name || "",
+            last_name: userData.last_name || "",
+            wallet_address: userData.wallet_address || "",
+            one_liner_bio: userData.one_liner_bio || "",
+            description: userData.description || "",
+            skills: userData.skills ? userData.skills.split(",") : [],
+            linkedin_url: userData.linkedin_url || "",
+            github_url: userData.github_url || "",
+            twitter_url: userData.twitter_url || "",
+            discord_url: userData.discord_url || "",
+          };
         }
       } catch (error) {
         console.error("Error initializing form data:", error);
+        this.showSnackbar('Error fetching user data', 'error');
       }
     },
+    // Navigate back to the dashboard
     goBack() {
       this.$router.push("/dashboard"); // Change this to your actual route
     },
-    openUploadModal(type) {
-      window.cloudinary.openUploadWidget(
-        {
-          cloud_name: `${process.env.VUE_APP_CLOUDINARY_CLOUD_NAME}`,
-          upload_preset: `${process.env.VUE_APP_CLOUDINARY_UPLOAD_PRESET}`,
-        },
-        (error, result) => {
-          if (!error && result && result.event === "success") {
-            if (type === "profile_photo") {
-              this.$set(this.form, "profile_photo", result.info.secure_url);
-            }
-          } else if (error) {
-            console.error("Upload failed:", error);
-          }
-        }
-      );
-    },
+    // Save profile information
     async saveProfile() {
       if (this.$refs.form.validate()) {
         try {
@@ -333,15 +360,18 @@ export default {
           );
           const data = await response.json();
           if (data.success) {
-            this.$router.push("/dashboard"); // Redirect after successful save
+            this.showSnackbar('Profile saved successfully!', 'success');
+            await this.initializeFormData(); // Refresh the form data
           } else {
-            console.error("Save failed", data.message);
+            this.showSnackbar('Failed to save profile: ' + data.message, 'error');
           }
         } catch (error) {
           console.error("Save failed", error);
+          this.showSnackbar('An error occurred while saving the profile', 'error');
         }
       }
     },
+    // Save social account information
     async saveSocials() {
       if (this.$refs.socialForm.validate()) {
         try {
@@ -357,18 +387,66 @@ export default {
           );
           const data = await response.json();
           if (data.success) {
-            this.$router.push("/dashboard"); // Redirect after successful save
+            this.showSnackbar('Social accounts saved successfully!', 'success');
+            await this.initializeFormData(); // Refresh the form data
           } else {
-            console.error("Save failed", data.message);
+            this.showSnackbar('Failed to save social accounts: ' + data.message, 'error');
           }
         } catch (error) {
           console.error("Save failed", error);
+          this.showSnackbar('An error occurred while saving social accounts', 'error');
         }
       }
     },
+    // Add a new skill (placeholder function)
     addSkill() {
       // Logic to add a new skill, e.g., opening a modal for input
       console.log("Add skill clicked");
+    },
+    // Display a notification using the snackbar
+    showSnackbar(text, color) {
+      this.snackbar.text = text;
+      this.snackbar.color = color;
+      this.snackbar.show = true;
+    },
+    // Update profile photo on the server
+    async updateProfilePhoto() {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/update-profile-photo`,
+          {
+            learner_id: this.learnerId,
+            profile_photo_url: this.avatarUrl,
+          }
+        );
+        console.log(response.data.message);
+      } catch (error) {
+        console.error("Error updating profile photo:", error);
+      }
+    },
+    // Open Cloudinary upload widget for image uploads
+    openUploadModal(type) {
+      window.cloudinary
+        .openUploadWidget(
+          {
+            cloud_name: `${process.env.VUE_APP_CLOUDINARY_CLOUD_NAME}`,
+            upload_preset: `${process.env.VUE_APP_CLOUDINARY_UPLOAD_PRESET}`,
+          },
+          (error, result) => {
+            if (!error && result && result.event === "success") {
+              if (type === "profile_photo") {
+                this.avatarUrl = result.info.secure_url;
+                this.updateProfilePhoto();
+              } else if (type === "profile_banner") {
+                this.bannerUrl = result.info.secure_url;
+                this.updateProfileBanner();
+              } else {
+                console.log("unknown call");
+              }
+            }
+          }
+        )
+        .open();
     },
   },
 };
