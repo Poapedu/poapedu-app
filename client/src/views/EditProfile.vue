@@ -144,8 +144,9 @@
         <v-form
           class="mt-10 socialForm py-10 px-10 social-form"
           ref="socialForm"
-          v-model="valid"
+          v-model="socialFormValid"
           lazy-validation
+          @submit.prevent="saveSocials"
         >
           <v-row>
             <v-col cols="6">
@@ -153,7 +154,7 @@
             </v-col>
 
             <v-col cols="6" class="d-flex justify-end">
-              <v-btn class="save-btn" @click="saveSocials">
+              <v-btn class="save-btn" @click="saveSocials" :disabled="!socialFormValid">
                 <v-icon left>mdi-floppy</v-icon>
                 Save Changes
               </v-btn>
@@ -171,6 +172,10 @@
                   bg-color="white"
                   density="compact"
                   variant="solo"
+                  :rules="[rules.url]"
+                  placeholder="https://github.com/yourusername"
+                  clearable
+                  @input="validateField('github_url')"
                 ></v-text-field>
               </div>
             </v-col>
@@ -185,6 +190,10 @@
                   bg-color="white"
                   density="compact"
                   variant="solo"
+                  :rules="[rules.url]"
+                  placeholder="https://www.linkedin.com/in/yourprofile"
+                  clearable
+                  @input="validateField('linkedin_url')"
                 ></v-text-field>
               </div>
             </v-col>
@@ -199,6 +208,10 @@
                   bg-color="white"
                   density="compact"
                   variant="solo"
+                  :rules="[rules.url]"
+                  placeholder="https://x.com/yourusername"
+                  clearable
+                  @input="validateField('twitter_url')"
                 ></v-text-field>
               </div>
             </v-col>
@@ -213,10 +226,16 @@
                   bg-color="white"
                   density="compact"
                   variant="solo"
+                  :rules="[rules.url]"
+                  placeholder="https://discord.gg/yourserver"
+                  clearable
+                  @input="validateField('discord_url')"
                 ></v-text-field>
               </div>
             </v-col>
           </v-row>
+
+          <input type="hidden" name="learner_id" v-model="form.learner_id" />
         </v-form>
         <v-row class="back-button-row">
           <v-col cols="12" class="d-flex align-start">
@@ -276,6 +295,7 @@ export default {
         github_url: "",
         twitter_url: "",
         discord_url: "",
+        learner_id: "",
       },
       // Snackbar configuration for displaying notifications
       snackbar: {
@@ -283,6 +303,19 @@ export default {
         text: '',
         color: '',
       },
+      rules: {
+        required: value => !!value || 'Field is required',
+        url: value => {
+          if (!value) return true; // Allow empty field if not required
+          const pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+            '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+          return pattern.test(value) || 'Please enter a valid URL';
+        }
+      }
     };
   },
   async created() {
@@ -290,6 +323,13 @@ export default {
     this.initializeFormData();
   },
   methods: {
+    validateField(fieldName) {
+      this.$refs.socialForm.validate();
+      if (this.form[fieldName] && !this.rules.url(this.form[fieldName])) {
+        this.form[fieldName] = ''; // Clear invalid input
+        this.showSnackbar('Please enter a valid URL', 'error');
+      }
+    },
     // Fetch and populate form data from the server
     async initializeFormData() {
       try {
@@ -322,6 +362,7 @@ export default {
           // Update the entire form object with fetched user data
           this.form = {
             ...this.form,
+            learner_id: userData.learner_id || "",
             profile_photo: userData.profile_photo || "",
             first_name: userData.first_name || "",
             last_name: userData.last_name || "",
@@ -342,7 +383,7 @@ export default {
     },
     // Navigate back to the dashboard
     goBack() {
-      this.$router.push("/dashboard"); // Change this to your actual route
+      this.$router.push("/dashboard");
     },
     // Save profile information
     async saveProfile() {
@@ -374,6 +415,20 @@ export default {
     // Save social account information
     async saveSocials() {
       if (this.$refs.socialForm.validate()) {
+
+        const socialData = {
+          learner_id: this.form.learner_id,
+          linkedin_url: this.form.linkedin_url || null,
+          github_url: this.form.github_url || null,
+          twitter_url: this.form.twitter_url || null,
+          discord_url: this.form.discord_url || null,
+        };
+
+        // Filter out null values
+        const filteredSocialData = Object.fromEntries(
+          Object.entries(socialData).filter(([, value]) => value != null)
+        );
+        
         try {
           const response = await fetch(
             `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/save-socials`,
@@ -382,19 +437,20 @@ export default {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify(this.form),
+              body: JSON.stringify(filteredSocialData),
             }
           );
           const data = await response.json();
+          console.log("Save socials response:", data); // For debugging
           if (data.success) {
-            this.showSnackbar('Social accounts saved successfully!', 'success');
+            this.showSnackbar('Social accounts updated successfully!', 'success');
             await this.initializeFormData(); // Refresh the form data
           } else {
-            this.showSnackbar('Failed to save social accounts: ' + data.message, 'error');
+            this.showSnackbar('Failed to update social accounts: ' + data.message, 'error');
           }
         } catch (error) {
           console.error("Save failed", error);
-          this.showSnackbar('An error occurred while saving social accounts', 'error');
+          this.showSnackbar('An error occurred while updating social accounts', 'error');
         }
       }
     },

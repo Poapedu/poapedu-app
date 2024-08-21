@@ -343,111 +343,130 @@ app.post("/skills-webhook", (req, res) => {
 });
 
 // Save profile endpoint
-app.post("/api/save-profile", (req, res) => {
+app.post("/api/save-profile", async (req, res) => {
   const {
     email, // Take email from the request body, which should be passed from Supabase
     wallet_address,
     first_name,
     last_name,
     profile_photo,
-    profile_banner,
     one_liner_bio,
     description,
-    slug,
+    learner_id
   } = req.body;
 
   // Determine the value of hasFilled based on first_name and last_name
   const hasFilled = first_name && last_name ? "1" : "0";
 
-  const query = `
-    INSERT INTO Learners (
-      email, wallet_address, first_name, last_name,
-      profile_photo, profile_banner, one_liner_bio,
-      description, slug, hasFilled
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-      wallet_address = VALUES(wallet_address),
-      first_name = VALUES(first_name),
-      last_name = VALUES(last_name),
-      profile_photo = VALUES(profile_photo),
-      profile_banner = VALUES(profile_banner),
-      one_liner_bio = VALUES(one_liner_bio),
-      description = VALUES(description),
-      slug = VALUES(slug),
-      hasFilled = VALUES(hasFilled)
-  `;
+  // const query = `
+  //   INSERT INTO Learners (
+  //     email, wallet_address, first_name, last_name,
+  //     profile_photo, one_liner_bio,
+  //     description, slug, hasFilled
+  //   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  //   ON DUPLICATE KEY UPDATE
+  //     wallet_address = VALUES(wallet_address),
+  //     first_name = VALUES(first_name),
+  //     last_name = VALUES(last_name),
+  //     profile_photo = VALUES(profile_photo),
+  //     one_liner_bio = VALUES(one_liner_bio),
+  //     description = VALUES(description),
+  //     hasFilled = VALUES(hasFilled)
+  // `;
 
+  const query = `
+  UPDATE Learners
+  SET
+    email = ?,
+    wallet_address = ?,
+    first_name = ?,
+    last_name = ?,
+    profile_photo = ?,
+    one_liner_bio = ?,
+    description = ?,
+    hasFilled = ?
+  WHERE learner_id = ?
+`;
   const values = [
     email,
     wallet_address,
     first_name,
     last_name,
     profile_photo,
-    profile_banner,
     one_liner_bio,
     description,
-    slug,
     hasFilled,
+    learner_id
   ];
 
-  db.query(query, values, (error, results) => {
-    if (error) {
-      console.error("Error saving profile:", error);
-      return res
-        .status(500)
-        .json({ success: false, message: "Database error" });
+  try {
+    const [result] = await db.query(query, values);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "User not found or no changes made" });
     }
-    console.log(results);
+
     res.json({ success: true, message: "Profile saved successfully" });
-  });
+  } catch (error) {
+    console.error("Error saving profile:", error);
+    res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
 // Save socials endpoint
-app.post("/api/save-socials", (req, res) => {
+app.post("/api/save-socials", async (req, res) => {
   const {
     learner_id,
     linkedin_url,
     twitter_url,
     discord_url,
     github_url,
-    devto_url,
-    website_url,
   } = req.body;
 
+  const updateFields = [];
+  const values = [];
+
+  if (linkedin_url !== undefined) {
+    updateFields.push('linkedin_url = ?');
+    values.push(linkedin_url);
+  }
+  if (twitter_url !== undefined) {
+    updateFields.push('twitter_url = ?');
+    values.push(twitter_url);
+  }
+  if (discord_url !== undefined) {
+    updateFields.push('discord_url = ?');
+    values.push(discord_url);
+  }
+  if (github_url !== undefined) {
+    updateFields.push('github_url = ?');
+    values.push(github_url);
+  }
+
+  if (updateFields.length === 0) {
+    return res.status(400).json({ success: false, message: "No fields to update" });
+  }
+
+  values.push(learner_id);
+
   const query = `
-    INSERT INTO Learners (
-      learner_id, linkedin_url, twitter_url, discord_url,
-      github_url, devto_url, website_url
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-      linkedin_url = VALUES(linkedin_url),
-      twitter_url = VALUES(twitter_url),
-      discord_url = VALUES(discord_url),
-      github_url = VALUES(github_url),
-      devto_url = VALUES(devto_url),
-      website_url = VALUES(website_url)
+    UPDATE Learners
+    SET ${updateFields.join(', ')}
+    WHERE learner_id = ?
   `;
 
-  const values = [
-    learner_id,
-    linkedin_url,
-    twitter_url,
-    discord_url,
-    github_url,
-    devto_url,
-    website_url,
-  ];
-
-  db.query(query, values, (error, results) => {
-    if (error) {
-      console.error("Error saving socials:", error);
-      return res
-        .status(500)
-        .json({ success: false, message: "Database error" });
+  try {
+    const [result] = await db.query(query, values);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "User not found or no changes made" });
     }
 
-    res.json({ success: true, message: "Socials saved successfully" });
-  });
+    res.json({ success: true, message: "Social accounts updated successfully" });
+  } catch (error) {
+    console.error("Error updating social accounts:", error);
+    res.status(500).json({ success: false, message: "Database error" });
+  }
 });
 
 // Endpoint to update profile photo
@@ -643,6 +662,7 @@ app.get("/api/user", async (req, res) => {
 
     const user = rows[0];
     res.json({
+      learner_id: user.learner_id,
       wallet_address: user.wallet_address,
       first_name: user.first_name,
       last_name: user.last_name,
