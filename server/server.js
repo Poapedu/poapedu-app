@@ -678,6 +678,7 @@ app.get("/api/user", async (req, res) => {
       description: user.description,
       slug: user.slug,
       bio: user.bio,
+      email: user.email,
       hasFilled: user.hasFilled,
     });
   } catch (error) {

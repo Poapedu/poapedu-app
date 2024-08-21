@@ -12,7 +12,8 @@
         <template v-slot:activator="{ props }">
           <v-btn icon v-bind="props">
             <v-avatar color="brown" size="large">
-              <span class="text-h5">{{ user.initials }}</span>
+              <v-img v-if="userProfilePicture" :src="userProfilePicture" alt="User Avatar"></v-img>
+              <span v-else class="text-h5">{{ userInitials }}</span>
             </v-avatar>
           </v-btn>
         </template>
@@ -20,11 +21,12 @@
           <v-card-text>
             <div class="mx-auto">
               <v-avatar color="brown">
-                <span class="text-h5">{{ user.initials }}</span>
+                <v-img v-if="userProfilePicture" :src="userProfilePicture" alt="User Avatar"></v-img>
+                <span v-else class="text-h5">{{ userInitials }}</span>
               </v-avatar>
-              <h3>{{ user.fullName }}</h3>
+              <h3>{{ userFullName }}</h3>
               <p class="text-caption mt-1">
-                {{ user.email }}
+                {{ userEmail }}
               </p>
               <v-divider class="my-3"></v-divider>
               <v-btn variant="text" rounded @click="goToEditProfile">
@@ -45,18 +47,29 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import { supabase } from "@/supabase";
 import { authStore } from "@/store/authStore";
 
 export default {
   name: "AppHeader",
-  data: () => ({
-    user: {
-      initials: "JD",
-      fullName: "John Doe",
-      email: "john.doe@doe.com",
+  computed: {
+    ...mapState(['dbData']),
+    userProfilePicture() {
+      return this.dbData?.profile_photo || null;
     },
-  }),
+    userInitials() {
+      const firstName = this.dbData?.first_name || '';
+      const lastName = this.dbData?.last_name || '';
+      return (firstName[0] + lastName[0]).toUpperCase();
+    },
+    userFullName() {
+      return `${this.dbData?.first_name || ''} ${this.dbData?.last_name || ''}`;
+    },
+    userEmail() {
+      return this.dbData?.email || '';
+    }
+  },
   methods: {
     connectWallet() {
       // Implement wallet connection logic here
@@ -79,7 +92,7 @@ export default {
       } catch (error) {
         console.error("Error signing out:", error.message);
       }
-    },
+    }
   },
 };
 </script>
