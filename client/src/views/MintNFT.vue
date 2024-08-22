@@ -29,9 +29,22 @@
                     <v-col class="text-right">
                       <v-btn
                         rounded="xl"
-                        :color="wallet.connected ? 'secondary' : 'primary'"
+                        :color="
+                          wallet.name === 'MetaMask'
+                            ? wallet.connected
+                              ? '#CBC0B3'
+                              : '#6BA1B4'
+                            : 'grey'
+                        "
+                        :disabled="wallet.name !== 'MetaMask'"
                       >
-                        {{ wallet.connected ? "Disconnect" : "Connect" }}
+                        {{
+                          wallet.name === "MetaMask"
+                            ? wallet.connected
+                              ? "Disconnect"
+                              : "Connect"
+                            : "Coming Soon"
+                        }}
                       </v-btn>
                     </v-col>
                   </v-row>
@@ -309,6 +322,7 @@
                         color="#9AD393"
                         class="mt-4"
                         size="large"
+                        @click="mintNFT"
                       >
                         Mint NFT
                       </v-btn>
@@ -324,6 +338,7 @@
               color="#9AD393"
               class="mt-4"
               size="large"
+              @click="mintNFT"
               >Mint NFT</v-btn
             >
           </div>
@@ -344,6 +359,7 @@
 <script>
 import AppHeader from "../components/AppHeader.vue";
 import AppFooter from "../components/AppFooter.vue";
+
 export default {
   name: "EditProfile",
   components: {
@@ -352,6 +368,20 @@ export default {
   },
   data() {
     return {
+      web3: null,
+      account: null,
+      poapeduNFT: null,
+      ipfsHashes: [
+        "QmVpX8X5v3nLdxvmMrkmji6zn8U89QbkYrfkfBCjWoNK5T",
+        "QmU6yVg55iozDEYbmj1soBykauVkwLgEdTNJ7de6WxMJev",
+        "QmSrGFZjsu1azmxoDUdE5bsX6kQdGh9QDUuUS9rvJUTPrf",
+        "QmTRGSf9aWPXx8WkxomDV3nKaXAVZhgxPEwA6MGKwDeSwQ",
+        "QmTAHGm54GvX4vPNRXpCk1GBCMweBZNcvmXT3TYcBuh9EX",
+        "QmbGZXc16x5D182ahfnBqwR8YJ2UNbY16vTD7P2fuB4bc8",
+        "QmUoPvZPqvTKyDZULTZQseNQRY3xsjDYg6NGgAjdY8dLxp",
+        "QmNmHaoAB22X8n9FKmgdDxznyhs8XkUAVw7zWoT1sPzPxi",
+      ],
+
       wallets: [
         { name: "MetaMask", connected: false },
         { name: "Coinbase Wallet", connected: false },
