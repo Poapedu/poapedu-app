@@ -14,7 +14,7 @@ export function getWeb3() {
 }
 
 export function getContract(web3) {
-  const contractAddress = "0xc0CA866dC3C1453F771E1489c71572D2C415C77A"; // Your deployed contract address
+  const contractAddress = "0xB85c2322BaD4008a5F42ED4347a8d9eFF2eBBC62"; // Your deployed contract address
   const contractABI = [
     {
       type: "constructor",
@@ -152,20 +152,12 @@ export function getContract(web3) {
         { name: "to", type: "address", internalType: "address" },
         { name: "courseName", type: "string", internalType: "string" },
         { name: "userName", type: "string", internalType: "string" },
-        {
-          name: "courseDescription",
-          type: "string",
-          internalType: "string",
-        },
+        { name: "courseDescription", type: "string", internalType: "string" },
         { name: "skills", type: "string", internalType: "string" },
         { name: "issuedTo", type: "string", internalType: "string" },
         { name: "domain", type: "string", internalType: "string" },
         { name: "issuedBy", type: "string", internalType: "string" },
-        {
-          name: "certificateImage",
-          type: "string",
-          internalType: "string",
-        },
+        { name: "certificateImage", type: "string", internalType: "string" },
         { name: "issuerLogo", type: "string", internalType: "string" },
         { name: "badges", type: "string", internalType: "string" },
       ],
@@ -455,12 +447,7 @@ export function getContract(web3) {
           indexed: true,
           internalType: "address",
         },
-        {
-          name: "to",
-          type: "address",
-          indexed: true,
-          internalType: "address",
-        },
+        { name: "to", type: "address", indexed: true, internalType: "address" },
         {
           name: "tokenId",
           type: "uint256",
