@@ -374,7 +374,7 @@
 import AppHeader from "../components/AppHeader.vue";
 import AppFooter from "../components/AppFooter.vue";
 import { getWeb3, getContract } from "@/utils/web3";
-import { mapState } from 'vuex';
+import { mapState } from "vuex";
 
 export default {
   name: "EditProfile",
@@ -429,10 +429,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(['dbData']),
+    ...mapState(["dbData"]),
     userEmail() {
-      return this.dbData?.email || '';
-    }
+      return this.dbData?.email || "";
+    },
   },
   methods: {
     async connectWallet() {
