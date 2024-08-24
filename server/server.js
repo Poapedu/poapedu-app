@@ -80,9 +80,14 @@ app.get("/scrape", async (req, res) => {
 
         const certificateImage =
           document.querySelector(".cr-badges-full-badge__img")?.src || "";
-        const issuedToHtml =
+
+        const issuedToHtmlTemp =
           document.querySelector(".badge-banner-issued-to-text")?.innerHTML ||
           "";
+
+        const issuedToHtml =
+          issuedToHtmlTemp.match(/<a[^>]*>(.*?)<\/a>/)?.[1].trim() || "";
+
         const certificateTitle =
           document
             .querySelector(".ac-heading--badge-name-hero")
@@ -122,7 +127,7 @@ app.get("/scrape", async (req, res) => {
           .join(", ");
         //console.log('Extracting issued date...');
         const issuedOnText =
-          document.querySelector(".issued-on")?.textContent.trim() || "";
+          document.querySelector(".issued-on > div")?.textContent.trim() || "";
         //console.log('Extracting expiry date...');
         const expiresOnText =
           document.querySelector(".expires-on")?.textContent.trim() || "";
@@ -133,6 +138,8 @@ app.get("/scrape", async (req, res) => {
         const certificateTitle =
           document.querySelector("h1.mat-h1")?.textContent.trim() || "";
         //console.log('Extraction complete.');
+        const issuedToHtml =
+          document.querySelector("h2.name.mat-h2")?.textContent.trim() || "";
 
         return {
           domain: "credential.net",
@@ -143,7 +150,8 @@ app.get("/scrape", async (req, res) => {
           issuedOn: issuedOnText,
           expiresOn: expiresOnText,
           issuerLogo: issuerLogoHtml,
-          certificateTitle,
+          issuedTo: issuedToHtml,
+          certificateTitle: certificateTitle,
         };
       });
     } else if (
@@ -352,7 +360,7 @@ app.post("/api/save-profile", async (req, res) => {
     profile_photo,
     one_liner_bio,
     description,
-    learner_id
+    learner_id,
   } = req.body;
 
   // Determine the value of hasFilled based on first_name and last_name
@@ -396,14 +404,16 @@ app.post("/api/save-profile", async (req, res) => {
     one_liner_bio,
     description,
     hasFilled,
-    learner_id
+    learner_id,
   ];
 
   try {
     const [result] = await db.query(query, values);
-    
+
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "User not found or no changes made" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found or no changes made" });
     }
 
     res.json({ success: true, message: "Profile saved successfully" });
@@ -415,54 +425,56 @@ app.post("/api/save-profile", async (req, res) => {
 
 // Save socials endpoint
 app.post("/api/save-socials", async (req, res) => {
-  const {
-    learner_id,
-    linkedin_url,
-    twitter_url,
-    discord_url,
-    github_url,
-  } = req.body;
+  const { learner_id, linkedin_url, twitter_url, discord_url, github_url } =
+    req.body;
 
   const updateFields = [];
   const values = [];
 
   if (linkedin_url !== undefined) {
-    updateFields.push('linkedin_url = ?');
+    updateFields.push("linkedin_url = ?");
     values.push(linkedin_url);
   }
   if (twitter_url !== undefined) {
-    updateFields.push('twitter_url = ?');
+    updateFields.push("twitter_url = ?");
     values.push(twitter_url);
   }
   if (discord_url !== undefined) {
-    updateFields.push('discord_url = ?');
+    updateFields.push("discord_url = ?");
     values.push(discord_url);
   }
   if (github_url !== undefined) {
-    updateFields.push('github_url = ?');
+    updateFields.push("github_url = ?");
     values.push(github_url);
   }
 
   if (updateFields.length === 0) {
-    return res.status(400).json({ success: false, message: "No fields to update" });
+    return res
+      .status(400)
+      .json({ success: false, message: "No fields to update" });
   }
 
   values.push(learner_id);
 
   const query = `
     UPDATE Learners
-    SET ${updateFields.join(', ')}
+    SET ${updateFields.join(", ")}
     WHERE learner_id = ?
   `;
 
   try {
     const [result] = await db.query(query, values);
-    
+
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "User not found or no changes made" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found or no changes made" });
     }
 
-    res.json({ success: true, message: "Social accounts updated successfully" });
+    res.json({
+      success: true,
+      message: "Social accounts updated successfully",
+    });
   } catch (error) {
     console.error("Error updating social accounts:", error);
     res.status(500).json({ success: false, message: "Database error" });
@@ -685,6 +697,27 @@ app.get("/api/user", async (req, res) => {
     console.error("Database query failed:", error);
     res.status(500).json({ error: "Database query failed" });
   }
+});
+
+// Example using Express.js
+app.post("/upload-metadata", async (req, res) => {
+  const metadata = req.body;
+
+  const response = await fetch(
+    "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        pinata_api_key: process.env.POAPEDU_PINATA_API_KEY,
+        pinata_secret_api_key: process.env.POAPEDU_PINATA_SECRET_API_KEY,
+      },
+      body: JSON.stringify(metadata),
+    }
+  );
+
+  const result = await response.json();
+  res.json({ ipfsUrl: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}` });
 });
 
 const PORT = process.env.PORT || 3000;
