@@ -37,6 +37,7 @@
                             : 'grey'
                         "
                         :disabled="wallet.name !== 'MetaMask'"
+                        @click="connectWallet"
                       >
                         {{
                           wallet.name === "MetaMask"
@@ -359,6 +360,7 @@
 <script>
 import AppHeader from "../components/AppHeader.vue";
 import AppFooter from "../components/AppFooter.vue";
+import { getWeb3, getContract } from "@/utils/web3";
 
 export default {
   name: "EditProfile",
@@ -417,6 +419,85 @@ export default {
     };
   },
   methods: {
+    async connectWallet() {
+      try {
+        const web3 = getWeb3();
+        if (web3) {
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+          const accounts = await web3.eth.getAccounts();
+          if (accounts.length > 0) {
+            this.account = accounts[0];
+            this.$emit("connected", this.account);
+          } else {
+            console.error(
+              "No accounts found. Please ensure MetaMask is connected."
+            );
+          }
+        } else {
+          console.error("MetaMask is not installed.");
+        }
+      } catch (error) {
+        console.error("Failed to connect MetaMask:", error);
+      }
+    },
+    async mintNFT() {
+      try {
+        if (!this.account) {
+          console.error(
+            "No account connected. Please connect your wallet first."
+          );
+          return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * this.ipfsHashes.length);
+        const selectedImageHash = this.ipfsHashes[randomIndex];
+        const selectedImageURL = `https://gateway.pinata.cloud/ipfs/${selectedImageHash}`;
+
+        const { courseName, courseDescription, skills, issuedTo } =
+          this.scrapedContent;
+        if (!issuedTo) {
+          console.error("issuedTo is undefined. Please ensure it is provided.");
+          return;
+        }
+        console.log("Minting NFT with the following data:");
+        console.log("Account:", this.account);
+        console.log("Course Name:", courseName);
+        console.log("Issued To:", issuedTo);
+        console.log("Course Description:", courseDescription);
+        console.log("Skills:", skills.join(","));
+        console.log("Domain:", this.scrapedContent.domain);
+        console.log("Issued By:", this.scrapedContent.issuedBy || "");
+        console.log("Certificate Image URL:", selectedImageURL);
+        console.log("Issuer Logo:", this.scrapedContent.issuerLogo || "");
+        console.log("Badges:", this.scrapedContent.badges || "");
+        const issuerLogo =
+          typeof this.scrapedContent.issuerLogo === "string"
+            ? this.scrapedContent.issuerLogo
+            : "";
+
+        const contract = getContract(getWeb3());
+        const tx = await contract.methods
+          .mint(
+            this.account,
+            courseName,
+            issuedTo,
+            courseDescription,
+            skills.join(","),
+            issuedTo,
+            this.scrapedContent.domain,
+            this.scrapedContent.issuedBy || "",
+            selectedImageURL,
+            issuerLogo,
+            this.scrapedContent.badges || ""
+          )
+          .send({ from: this.account });
+
+        console.log("Transaction receipt:", tx);
+        alert("NFT minted successfully with image: " + selectedImageURL);
+      } catch (error) {
+        console.error("Failed to mint NFT:", error);
+      }
+    },
     validateUrl() {
       const credlyRegex = /^https?:\/\/(www\.)?credly\.com\//i;
       const credentialNetRegex = /^https?:\/\/(www\.)?credential\.net\//i;
@@ -495,6 +576,7 @@ export default {
               expiresOn: `${this.data.expiresOn}`,
               issuerLogo: `${this.data.issuerLogo}`,
               courseName: `${this.data.certificateTitle}`,
+              issuedTo: `${this.data.issuedTo}`,
             };
             this.showScrapedContent = true;
           } else if (this.data.domain === "linkedin.com") {
