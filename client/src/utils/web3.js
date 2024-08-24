@@ -14,7 +14,7 @@ export function getWeb3() {
 }
 
 export function getContract(web3) {
-  const contractAddress = "0xB85c2322BaD4008a5F42ED4347a8d9eFF2eBBC62"; // Your deployed contract address
+  const contractAddress = "0x316A879e9b172879C4E05b798A7a5606a2Eda845"; // Your deployed contract address
   const contractABI = [
     {
       type: "constructor",
@@ -70,50 +70,10 @@ export function getContract(web3) {
     },
     {
       type: "function",
-      name: "getCourse",
-      inputs: [{ name: "tokenId", type: "uint256", internalType: "uint256" }],
-      outputs: [
-        {
-          name: "",
-          type: "tuple",
-          internalType: "struct PoapeduNFT.Course",
-          components: [
-            { name: "courseName", type: "string", internalType: "string" },
-            { name: "userName", type: "string", internalType: "string" },
-            {
-              name: "courseDescription",
-              type: "string",
-              internalType: "string",
-            },
-            { name: "skills", type: "string", internalType: "string" },
-            { name: "issuedTo", type: "string", internalType: "string" },
-            { name: "domain", type: "string", internalType: "string" },
-            { name: "issuedBy", type: "string", internalType: "string" },
-            {
-              name: "certificateImage",
-              type: "string",
-              internalType: "string",
-            },
-            { name: "issuerLogo", type: "string", internalType: "string" },
-            { name: "badges", type: "string", internalType: "string" },
-          ],
-        },
-      ],
-      stateMutability: "view",
-    },
-    {
-      type: "function",
       name: "getRoleAdmin",
       inputs: [{ name: "role", type: "bytes32", internalType: "bytes32" }],
       outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
       stateMutability: "view",
-    },
-    {
-      type: "function",
-      name: "grantMinterRole",
-      inputs: [{ name: "account", type: "address", internalType: "address" }],
-      outputs: [],
-      stateMutability: "nonpayable",
     },
     {
       type: "function",
@@ -150,16 +110,7 @@ export function getContract(web3) {
       name: "mint",
       inputs: [
         { name: "to", type: "address", internalType: "address" },
-        { name: "courseName", type: "string", internalType: "string" },
-        { name: "userName", type: "string", internalType: "string" },
-        { name: "courseDescription", type: "string", internalType: "string" },
-        { name: "skills", type: "string", internalType: "string" },
-        { name: "issuedTo", type: "string", internalType: "string" },
-        { name: "domain", type: "string", internalType: "string" },
-        { name: "issuedBy", type: "string", internalType: "string" },
-        { name: "certificateImage", type: "string", internalType: "string" },
-        { name: "issuerLogo", type: "string", internalType: "string" },
-        { name: "badges", type: "string", internalType: "string" },
+        { name: "metadataURI", type: "string", internalType: "string" },
       ],
       outputs: [],
       stateMutability: "nonpayable",
@@ -189,13 +140,6 @@ export function getContract(web3) {
           internalType: "address",
         },
       ],
-      outputs: [],
-      stateMutability: "nonpayable",
-    },
-    {
-      type: "function",
-      name: "revokeMinterRole",
-      inputs: [{ name: "account", type: "address", internalType: "address" }],
       outputs: [],
       stateMutability: "nonpayable",
     },
@@ -326,6 +270,25 @@ export function getContract(web3) {
     },
     {
       type: "event",
+      name: "BatchMetadataUpdate",
+      inputs: [
+        {
+          name: "_fromTokenId",
+          type: "uint256",
+          indexed: false,
+          internalType: "uint256",
+        },
+        {
+          name: "_toTokenId",
+          type: "uint256",
+          indexed: false,
+          internalType: "uint256",
+        },
+      ],
+      anonymous: false,
+    },
+    {
+      type: "event",
       name: "CourseBurned",
       inputs: [
         {
@@ -353,11 +316,18 @@ export function getContract(web3) {
           indexed: true,
           internalType: "address",
         },
+      ],
+      anonymous: false,
+    },
+    {
+      type: "event",
+      name: "MetadataUpdate",
+      inputs: [
         {
-          name: "courseName",
-          type: "string",
+          name: "_tokenId",
+          type: "uint256",
           indexed: false,
-          internalType: "string",
+          internalType: "uint256",
         },
       ],
       anonymous: false,
