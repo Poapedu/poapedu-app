@@ -374,6 +374,7 @@
 import AppHeader from "../components/AppHeader.vue";
 import AppFooter from "../components/AppFooter.vue";
 import { getWeb3, getContract } from "@/utils/web3";
+import { mapState } from 'vuex';
 
 export default {
   name: "EditProfile",
@@ -426,6 +427,12 @@ export default {
       error: null,
       data: null,
     };
+  },
+  computed: {
+    ...mapState(['dbData']),
+    userEmail() {
+      return this.dbData?.email || '';
+    }
   },
   methods: {
     async connectWallet() {
@@ -515,13 +522,40 @@ export default {
 
         console.log("Transaction receipt:", tx);
         alert("NFT minted successfully!");
+
+        await this.saveSkillsAndEmail();
       } catch (error) {
         console.error("Failed to mint NFT:", error);
       } finally {
         this.minting = false; // End the loading state regardless of success or failure
       }
     },
+    async saveSkillsAndEmail() {
+      console.log(this.userEmail);
+      console.log(this.scrapedContent.skills);
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/save-skills`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: this.userEmail, // Use the userEmail from the AppHeader
+              skills: this.scrapedContent.skills,
+            }),
+          }
+        );
 
+        const result = await response.json();
+        if (response.ok) {
+          console.log("Skills and email saved successfully:", result);
+        } else {
+          console.error("Failed to save skills and email:", result.message);
+        }
+      } catch (error) {
+        console.error("Error saving skills and email:", error);
+      }
+    },
     validateUrl() {
       const credlyRegex = /^https?:\/\/(www\.)?credly\.com\//i;
       const credentialNetRegex = /^https?:\/\/(www\.)?credential\.net\//i;
