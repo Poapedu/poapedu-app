@@ -60,17 +60,43 @@
           </v-alert>
 
           <v-row class="mt-4">
-            <v-col v-for="nft in detectedNFTs" :key="nft.name" cols="12" sm="4">
+            <v-col
+              v-for="nft in filterNFTs()"
+              :key="nft.token_hash"
+              cols="12"
+              sm="4"
+            >
               <v-card outlined height="100%">
                 <v-card-text class="text-center">
+                  <video
+                    v-if="
+                      nft.media && nft.media.original_media_url.endsWith('.mp4')
+                    "
+                    :src="nft.media.original_media_url"
+                    height="150"
+                    autoplay
+                    muted
+                    class="grey lighten-2"
+                  ></video>
+
+                  <!-- Fallback to using <v-img> for images -->
                   <v-img
-                    :src="nft.image"
+                    v-else
+                    :src="
+                      nft.media && nft.media.original_media_url
+                        ? nft.media.original_media_url
+                        : ''
+                    "
                     height="150"
                     contain
                     class="grey lighten-2"
                   ></v-img>
                   <p class="mt-2 mb-2" style="font-size: 20px">
-                    {{ nft.name }}
+                    {{
+                      nft.metadata && JSON.parse(nft.metadata).name
+                        ? JSON.parse(nft.metadata).name
+                        : "Unnamed"
+                    }}
                   </p>
                   <v-btn rounded="xl" color="#9AD393" block>Mint NFT</v-btn>
                 </v-card-text>
@@ -452,6 +478,8 @@ export default {
             if (metaMaskWallet) {
               metaMaskWallet.connected = true;
             }
+            // Now get the user's NFTs
+            await this.getNFTs(this.account);
           } else {
             console.error(
               "No accounts found. Please ensure MetaMask is connected."
@@ -464,7 +492,36 @@ export default {
         console.error("Failed to connect MetaMask:", error);
       }
     },
+    async getNFTs(walletAddress) {
+      console.log("Wallet Address is", walletAddress);
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/getUserNFTs`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ address: walletAddress }), // Use the argument passed
+          }
+        );
 
+        const result = await response.json();
+
+        if (result.success) {
+          console.log("NFTs:", result.nfts);
+          this.detectedNFTs = result.nfts.result; // Assuming the NFTs are in `result.nfts.result`
+        } else {
+          console.error("Failed to retrieve NFTs:", result.message);
+        }
+      } catch (error) {
+        console.error("Error fetching NFTs:", error);
+      }
+    },
+    filterNFTs() {
+      return this.detectedNFTs.filter((nft) => {
+        const symbol = nft.symbol ? nft.symbol.toUpperCase() : "";
+        return symbol === "ENC" || symbol === "LW3BADGES";
+      });
+    },
     async uploadMetadataToPinata(metadata) {
       const response = await fetch(
         `${process.env.VUE_APP_LOCAL_SERVER_URL}/upload-metadata`,

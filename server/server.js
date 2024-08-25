@@ -5,6 +5,7 @@ const { URL } = require("url");
 require("dotenv").config();
 const fs = require("fs");
 const mysql = require("mysql2/promise");
+const Moralis = require("moralis").default;
 
 const db = mysql.createPool({
   host: `${process.env.PROD_MYSQL_HOST}`,
@@ -17,6 +18,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+
+(async () => {
+  try {
+    await Moralis.start({
+      apiKey: process.env.MORALIS_API_KEY,
+    });
+    console.log("Moralis initialized");
+  } catch (error) {
+    console.error("Failed to start Moralis:", error);
+  }
+})();
 
 /**
  * Newsletter subscription API
@@ -761,6 +773,28 @@ app.post("/upload-metadata", async (req, res) => {
 
   const result = await response.json();
   res.json({ ipfsUrl: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}` });
+});
+
+app.post("/api/getUserNFTs", async (req, res) => {
+  const { address } = req.body;
+
+  try {
+    const response = await Moralis.EvmApi.nft.getWalletNFTs({
+      address: address,
+      chain: "0x89", // Polygon Mainnet
+      format: "decimal",
+      mediaItems: true,
+      excludeSpam: true,
+    });
+
+    res.json({
+      success: true,
+      nfts: response.raw,
+    });
+  } catch (error) {
+    console.error("Error fetching NFTs from Moralis:", error);
+    res.status(500).json({ error: "Failed to fetch NFTs" });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
