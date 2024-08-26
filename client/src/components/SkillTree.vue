@@ -5,8 +5,8 @@
       <v-col cols="3">
         <v-card color="#EAE1D7" class="mb-3" v-for="(item, index) in sidebarItems" :key="index" @click="selectCategory(item)">
           <div class="d-flex flex-no-wrap justify-space-between">
-            <div>
-              <v-card-title class="mt-1 text-h6 font-weight-black" v-html="item.title">
+            <div class="category-title">
+              <v-card-title class="mt-1 text-h6 font-weight-black" v-html="formatCategoryTitle(item.title)">
               </v-card-title>
             </div>
             <div class="d-flex mt-10 mr-3 justify-center">
@@ -89,7 +89,6 @@ export default {
             { color: 'orange', icon: 'mdi-database', skill: 'SQL' },
             { disabled: true, text: '🔒' },
             { disabled: true, text: '🔒' },
-            // ... add more locked items as needed
           ]
         },
         { 
@@ -102,12 +101,38 @@ export default {
             { color: 'blue-grey', icon: 'mdi-web', skill: 'Web3.js' },
             { color: 'light-blue', icon: 'mdi-cube-outline', skill: 'Blockchain' },
             { color: 'cyan', icon: 'mdi-shield-key-outline', skill: 'Cryptography' },
-            { disabled: true, text: '🔒' },
-            { disabled: true, text: '🔒' },
-            // ... add more locked items as needed
+            // { disabled: true, text: '🔒' },
+            // { disabled: true, text: '🔒' },
           ]
         },
-        // ... similar structure for DATA ANALYST and DATA SCIENTIST
+        {
+          title: 'DATA SCIENCE',
+          subtitle: '',
+          gridItems: [
+            { color: 'blue', icon: 'mdi-database-search', skill: 'Data Retrieval' },
+            { color: 'green', icon: 'mdi-broom', skill: 'Data Cleaning' },
+            { color: 'purple', icon: 'mdi-chart-bar', skill: 'Exploratory Data Analysis' },
+            { color: 'orange', icon: 'mdi-cog', skill: 'Feature Engineering' },
+            { color: 'red', icon: 'mdi-brain', skill: 'Machine Learning' },
+            { color: 'teal', icon: 'mdi-chart-line', skill: 'Predictive Analytics' },
+            { color: 'indigo', icon: 'mdi-calculator-variant', skill: 'Statistical Analysis' },
+            { color: 'deep-purple', icon: 'mdi-language-python', skill: 'Python' },
+            { color: 'light-blue', icon: 'mdi-database', skill: 'SQL' },
+            { color: 'amber', icon: 'mdi-chart-areaspline', skill: 'Data Visualization' },
+            { color: 'brown', icon: 'mdi-git', skill: 'Version Control' },
+            { color: 'cyan', icon: 'mdi-atom', skill: 'Deep Learning' },
+            { color: 'pink', icon: 'mdi-text', skill: 'NLP' },
+            { color: 'light-green', icon: 'mdi-clock-outline', skill: 'Time Series Analysis' },
+            { color: 'deep-orange', icon: 'mdi-ab-testing', skill: 'A/B Testing' },
+            { color: 'blue-grey', icon: 'mdi-cloud', skill: 'Cloud Computing' },
+            { color: 'yellow', icon: 'mdi-account-voice', skill: 'Data Storytelling' },
+            { color: 'grey', icon: 'mdi-rocket-launch', skill: 'Model Deployment' },
+            // { disabled: true, text: '🔒' },
+            // { disabled: true, text: '🔒' },
+            // { disabled: true, text: '🔒' },
+            // { disabled: true, text: '🔒' },
+          ]
+        },
       ],
       userSkills: []
     }
@@ -127,21 +152,25 @@ export default {
       }
     },
     userHasSkill(skill) {
-      return this.userSkills.includes(skill.toLowerCase());
+      return this.userSkills.some(userSkill => 
+        userSkill.toLowerCase().trim() === skill.toLowerCase().trim()
+      );
     },
     updateCategorySubtitles() {
       this.sidebarItems.forEach(category => {
         const totalSkills = category.gridItems.filter(item => item.skill).length;
-        const userSkillsInCategory = category.gridItems.filter(item => item.skill && this.userHasSkill(item.skill)).length;
+        console.log('total skills', totalSkills);
+        const userSkillsInCategory = category.gridItems.filter(item => 
+          item.skill && this.userHasSkill(item.skill)
+        ).length;
+        console.log(userSkillsInCategory);
         category.subtitle = `${userSkillsInCategory}/${totalSkills}`;
       });
     },
     async fetchUserSkills() {
       try {
-        const learner_id = this.learnerId;
-        const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/skills/${learner_id}`);
-        console.log(response)
-        this.userSkills = response.data.skills.map(skill => skill.toLowerCase());
+        const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/skills/${this.learnerId}`);
+        this.userSkills = response.data.skills;
         this.updateGridItems();
         this.updateCategorySubtitles();
         this.loading = false;
@@ -154,17 +183,31 @@ export default {
       this.sidebarItems.forEach(category => {
         category.gridItems.forEach(item => {
           if (item.skill) {
-            item.disabled = !this.userHasSkill(item.skill);
-            if (item.disabled) {
-              item.color = 'grey';
-            }
+            const hasSkill = this.userHasSkill(item.skill);
+            item.disabled = !hasSkill;
+            item.color = hasSkill ? item.color : 'grey';
           }
         });
       });
+    },
+    formatCategoryTitle(title) {
+      const words = title.split(' ');
+      if (words.length > 1) {
+        return words.join('<br>');
+      }
+      return title;
     }
   },
   created() {
-    this.fetchUserSkills();
+    this.$watch(
+      () => this.learnerId,
+      (newLearnerId) => {
+        if (newLearnerId) {
+          this.fetchUserSkills();
+        }
+      },
+      { immediate: true }
+    );
   }
 }
 </script>
@@ -174,5 +217,13 @@ export default {
   background: #ddd2c4;
   padding: 25px;
   border-radius: 10px;
+}
+.category-title {
+  flex-grow: 1;
+  max-width: 70%;
+}
+.v-card-title {
+  word-break: break-word;
+  line-height: 1.2;
 }
 </style>
