@@ -55,6 +55,7 @@ app.get("/scrape", async (req, res) => {
 
   try {
     const browser = await puppeteer.launch();
+    console.log(browser);
     const page = await browser.newPage();
 
     // console messages from the page to handle any errors. TBD to extend this but for now just a log.
@@ -797,9 +798,8 @@ app.post("/api/getUserNFTs", async (req, res) => {
   }
 });
 
-
 // API endpoint to get skills of a specific learner
-app.get('/api/skills/:learner_id', async (req, res) => {
+app.get("/api/skills/:learner_id", async (req, res) => {
   const learnerId = req.params.learner_id;
 
   const query = `
@@ -810,24 +810,22 @@ app.get('/api/skills/:learner_id', async (req, res) => {
   `;
 
   try {
-    
-      const [results] = await db.query(query, [learnerId]);
+    const [results] = await db.query(query, [learnerId]);
 
-      if (results.length === 0) {
-          return res.status(404).json({ skills: [] });
-      }
+    if (results.length === 0) {
+      return res.status(404).json({ skills: [] });
+    }
 
-      // Extract skill names from the results
-      const skills = results.map(row => row.name);
+    // Extract skill names from the results
+    const skills = results.map((row) => row.name);
 
-      // Return the skills as an array
-      res.json({ skills });
+    // Return the skills as an array
+    res.json({ skills });
   } catch (error) {
-      console.error('Error fetching skills:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching skills:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
