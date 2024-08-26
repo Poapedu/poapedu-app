@@ -73,7 +73,7 @@
                       nft.media && nft.media.original_media_url.endsWith('.mp4')
                     "
                     :src="nft.media.original_media_url"
-                    height="150"
+                    height="200"
                     autoplay
                     muted
                     class="grey lighten-2"
@@ -87,7 +87,7 @@
                         ? nft.media.original_media_url
                         : ''
                     "
-                    height="150"
+                    height="200"
                     contain
                     class="grey lighten-2"
                   ></v-img>
@@ -98,7 +98,9 @@
                         : "Unnamed"
                     }}
                   </p>
-                  <v-btn rounded="xl" color="#9AD393" block>Mint NFT</v-btn>
+                  <v-btn rounded="xl" color="#9AD393" @click="mintNFTFromNFT(nft)"
+                    >Mint NFT</v-btn
+                  >
                 </v-card-text>
               </v-card>
             </v-col>
@@ -581,6 +583,42 @@ export default {
         alert("NFT minted successfully!");
 
         await this.saveSkillsAndEmail();
+      } catch (error) {
+        console.error("Failed to mint NFT:", error);
+      } finally {
+        this.minting = false; // End the loading state regardless of success or failure
+      }
+    },
+    async mintNFTFromNFT(nft) {
+      try {
+        const selectedImageHash =
+          this.ipfsHashes[Math.floor(Math.random() * this.ipfsHashes.length)];
+        const selectedImageURL = `https://gateway.pinata.cloud/ipfs/${selectedImageHash}`;
+
+        const metadata = {
+          name: JSON.parse(nft.metadata).name,
+          description: JSON.parse(nft.metadata).description,
+          image: selectedImageURL,
+          attributes: [
+            {
+              trait_type: "Skills",
+              value: "",
+            },
+            { trait_type: "Issued To", value: nft.owner_of },
+            { trait_type: "Issued By", value: nft.token_address },
+            { trait_type: "Domain", value: nft.name },
+          ],
+        };
+        console.log(metadata);
+        const metadataUrl = await this.uploadMetadataToPinata(metadata);
+
+        const contract = getContract(getWeb3());
+        const tx = await contract.methods
+          .mint(this.account, metadataUrl)
+          .send({ from: this.account });
+
+        console.log("Transaction receipt:", tx);
+        alert("NFT minted successfully!");
       } catch (error) {
         console.error("Failed to mint NFT:", error);
       } finally {
