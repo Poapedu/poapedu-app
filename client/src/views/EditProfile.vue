@@ -466,16 +466,18 @@ export default {
       this.snackbar.show = true;
     },
     // Update profile photo on the server
-    async updateProfilePhoto() {
+    async updateProfilePhoto(avatarUrl) {
       try {
+        //console.log(this.form.learner_id);
         const response = await axios.post(
           `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/update-profile-photo`,
           {
-            learner_id: this.learnerId,
-            profile_photo_url: this.avatarUrl,
+            learner_id: this.form.learner_id,
+            profile_photo_url: avatarUrl,
           }
         );
         console.log(response.data.message);
+        this.form.profile_photo = avatarUrl;
       } catch (error) {
         console.error("Error updating profile photo:", error);
       }
@@ -491,8 +493,9 @@ export default {
           (error, result) => {
             if (!error && result && result.event === "success") {
               if (type === "profile_photo") {
-                this.avatarUrl = result.info.secure_url;
-                this.updateProfilePhoto();
+                const avatarUrl = result.info.secure_url;
+                //console.log(avatarUrl);
+                this.updateProfilePhoto(avatarUrl);
               } else if (type === "profile_banner") {
                 this.bannerUrl = result.info.secure_url;
                 this.updateProfileBanner();

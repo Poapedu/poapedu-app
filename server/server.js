@@ -797,5 +797,37 @@ app.post("/api/getUserNFTs", async (req, res) => {
   }
 });
 
+
+// API endpoint to get skills of a specific learner
+app.get('/api/skills/:learner_id', async (req, res) => {
+  const learnerId = req.params.learner_id;
+
+  const query = `
+      SELECT s.name
+      FROM LearnerSkills ls
+      JOIN Skills s ON ls.skill_id = s.skill_id
+      WHERE ls.learner_id = ?
+  `;
+
+  try {
+    
+      const [results] = await db.query(query, [learnerId]);
+
+      if (results.length === 0) {
+          return res.status(404).json({ skills: [] });
+      }
+
+      // Extract skill names from the results
+      const skills = results.map(row => row.name);
+
+      // Return the skills as an array
+      res.json({ skills });
+  } catch (error) {
+      console.error('Error fetching skills:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
