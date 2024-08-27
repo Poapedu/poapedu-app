@@ -6,7 +6,7 @@
             <v-card-text>
               <p class="text-h4 font-weight-black">TOTAL <br>NFTs</p>
               <div class="stat-number">
-                25
+                0
               </div>
             </v-card-text>
           </v-card>
@@ -16,7 +16,7 @@
             <v-card-text>
               <p class="text-h4 font-weight-black">MINTED ON <br>POAPEDU</p>
               <div class="stat-number">
-                25
+                0
               </div>
             </v-card-text>
           </v-card>
@@ -26,7 +26,7 @@
             <v-card-text>
               <p class="text-h4 font-weight-black">SKILLS <br>UNLOCKED</p>
               <div class="stat-number">
-                25
+                0
               </div>
             </v-card-text>
           </v-card>
