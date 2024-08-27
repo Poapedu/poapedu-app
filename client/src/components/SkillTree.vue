@@ -1,5 +1,7 @@
 <template>
   <v-container fluid class="pa-5 mt-10 skills-container" v-if="!loading">
+
+    <h2 class="mb-4" style="font-weight:900;">SKILLS</h2>
     <v-row>
       <!-- Left sidebar -->
       <v-col cols="3">
@@ -32,15 +34,25 @@
           <v-card-text>
             <v-row>
               <v-col v-for="(item, index) in selectedCategory.gridItems" :key="index" cols="2">
-                <v-btn 
+                <!-- <v-btn 
                   :color="item.color" 
                   :disabled="item.disabled" 
                   block 
                   height="60"
-                >
-                  <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
+                  style="padding:0px !important;"
+                > -->
+                  <v-img 
+                    v-if="item.image" 
+                    :src="item.image"
+                    :class="{ 'greyed-out': item.disabled }"
+                    height="60" 
+                    width="60" 
+                    contain
+                    :alt="item.skill"
+                    :title="item.skill"
+                  ></v-img>
                   <span v-else>{{ item.text }}</span>
-                </v-btn>
+                <!-- </v-btn> -->
               </v-col>
             </v-row>
           </v-card-text>
@@ -53,11 +65,30 @@
       <v-progress-circular indeterminate color="primary"></v-progress-circular>
     </v-row>
   </v-container>
+
+  <v-container fluid class="pa-5 mt-10 oc-container">
+    <h2 class="mb-4" style="font-weight:900;">YOU MAY ALSO LIKE</h2>
+    <v-row>
+      <v-col cols="6">
+        <a href="https://www.hackquest.io/en/?ref=poapedu">
+          <v-img aspect-ratio="16/9" cover :src="HackQuestOCP" alt="Earn certificates issued by leading Web3 ecosystems" title="Earn certificates issued by leading Web3 ecosystems"></v-img>
+        </a>
+      </v-col>
+      <v-col cols="6">
+        <a href="https://www.newcampus.com/?ref=poapedu">
+          <v-img aspect-ratio="16/9" cover :src="NewCampusOCP" alt="Empowering Southeast Asia’s startups to scale sustainably" title="Empowering Southeast Asia’s startups to scale sustainably"></v-img>
+        </a>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 import { mapState } from "vuex";
 import axios from 'axios';
+
+import HackQuestOCP from '@/assets/hackquest-partner.png';
+import NewCampusOCP from '@/assets/new-campus-partner.png';
 
 export default {
   name: 'SkillTree',
@@ -81,26 +112,26 @@ export default {
           title: 'WEB DEV', 
           subtitle: '',
           gridItems: [
-            { color: 'red', icon: 'mdi-language-html5', skill: 'HTML' },
-            { color: 'blue', icon: 'mdi-language-css3', skill: 'CSS' },
-            { color: 'yellow', icon: 'mdi-language-javascript', skill: 'JavaScript' },
-            { color: 'green', icon: 'mdi-react', skill: 'React' },
-            { color: 'teal', icon: 'mdi-nodejs', skill: 'Node.js' },
-            { color: 'orange', icon: 'mdi-database', skill: 'SQL' },
-            { disabled: true, text: '🔒' },
-            { disabled: true, text: '🔒' },
+            { color: 'red', image: this.getRandomBadgeImage(), skill: 'HTML' },
+            { color: 'blue', image: this.getRandomBadgeImage(), skill: 'CSS' },
+            { color: 'yellow', image: this.getRandomBadgeImage(), skill: 'JavaScript' },
+            { color: 'green', image: this.getRandomBadgeImage(), skill: 'React' },
+            { color: 'teal', image: this.getRandomBadgeImage(), skill: 'Node.js' },
+            { color: 'orange', image: this.getRandomBadgeImage(), skill: 'SQL' },
+            // { disabled: true, text: '🔒' },
+            // { disabled: true, text: '🔒' },
           ]
         },
         { 
           title: 'WEB3 DEV', 
           subtitle: '',
           gridItems: [
-            { color: 'purple', icon: 'mdi-ethereum', skill: 'Solidity' },
-            { color: 'indigo', icon: 'mdi-ethereum', skill: 'Ethereum' },
-            { color: 'deep-purple', icon: 'mdi-file-document-outline', skill: 'Smart Contracts' },
-            { color: 'blue-grey', icon: 'mdi-web', skill: 'Web3.js' },
-            { color: 'light-blue', icon: 'mdi-cube-outline', skill: 'Blockchain' },
-            { color: 'cyan', icon: 'mdi-shield-key-outline', skill: 'Cryptography' },
+            { color: 'purple', image: this.getRandomBadgeImage(), skill: 'Solidity' },
+            { color: 'indigo', image: this.getRandomBadgeImage(), skill: 'Ethereum' },
+            { color: 'deep-purple', image: this.getRandomBadgeImage(), skill: 'Smart Contracts' },
+            { color: 'blue-grey', image: this.getRandomBadgeImage(), skill: 'Web3.js' },
+            { color: 'light-blue', image: this.getRandomBadgeImage(), skill: 'Blockchain' },
+            { color: 'cyan', image: this.getRandomBadgeImage(), skill: 'Cryptography' },
             // { disabled: true, text: '🔒' },
             // { disabled: true, text: '🔒' },
           ]
@@ -109,24 +140,24 @@ export default {
           title: 'DATA SCIENCE',
           subtitle: '',
           gridItems: [
-            { color: 'blue', icon: 'mdi-database-search', skill: 'Data Retrieval' },
-            { color: 'green', icon: 'mdi-broom', skill: 'Data Cleaning' },
-            { color: 'purple', icon: 'mdi-chart-bar', skill: 'Exploratory Data Analysis' },
-            { color: 'orange', icon: 'mdi-cog', skill: 'Feature Engineering' },
-            { color: 'red', icon: 'mdi-brain', skill: 'Machine Learning' },
-            { color: 'teal', icon: 'mdi-chart-line', skill: 'Predictive Analytics' },
-            { color: 'indigo', icon: 'mdi-calculator-variant', skill: 'Statistical Analysis' },
-            { color: 'deep-purple', icon: 'mdi-language-python', skill: 'Python' },
-            { color: 'light-blue', icon: 'mdi-database', skill: 'SQL' },
-            { color: 'amber', icon: 'mdi-chart-areaspline', skill: 'Data Visualization' },
-            { color: 'brown', icon: 'mdi-git', skill: 'Version Control' },
-            { color: 'cyan', icon: 'mdi-atom', skill: 'Deep Learning' },
-            { color: 'pink', icon: 'mdi-text', skill: 'NLP' },
-            { color: 'light-green', icon: 'mdi-clock-outline', skill: 'Time Series Analysis' },
-            { color: 'deep-orange', icon: 'mdi-ab-testing', skill: 'A/B Testing' },
-            { color: 'blue-grey', icon: 'mdi-cloud', skill: 'Cloud Computing' },
-            { color: 'yellow', icon: 'mdi-account-voice', skill: 'Data Storytelling' },
-            { color: 'grey', icon: 'mdi-rocket-launch', skill: 'Model Deployment' },
+            { color: 'blue', image: this.getRandomBadgeImage(), skill: 'Data Retrieval' },
+            { color: 'green', image: this.getRandomBadgeImage(), skill: 'Data Cleaning' },
+            { color: 'purple', image: this.getRandomBadgeImage(), skill: 'Exploratory Data Analysis' },
+            { color: 'orange', image: this.getRandomBadgeImage(), skill: 'Feature Engineering' },
+            { color: 'red', image: this.getRandomBadgeImage(), skill: 'Machine Learning' },
+            { color: 'teal', image: this.getRandomBadgeImage(), skill: 'Predictive Analytics' },
+            { color: 'indigo', image: this.getRandomBadgeImage(), skill: 'Statistical Analysis' },
+            { color: 'deep-purple', image: this.getRandomBadgeImage(), skill: 'Python' },
+            { color: 'light-blue', image: this.getRandomBadgeImage(), skill: 'SQL' },
+            { color: 'amber', image: this.getRandomBadgeImage(), skill: 'Data Visualization' },
+            { color: 'brown', image: this.getRandomBadgeImage(), skill: 'Version Control' },
+            { color: 'cyan', image: this.getRandomBadgeImage(), skill: 'Deep Learning' },
+            { color: 'pink', image: this.getRandomBadgeImage(), skill: 'NLP' },
+            { color: 'light-green', image: this.getRandomBadgeImage(), skill: 'Time Series Analysis' },
+            { color: 'deep-orange', image: this.getRandomBadgeImage(), skill: 'A/B Testing' },
+            { color: 'blue-grey', image: this.getRandomBadgeImage(), skill: 'Cloud Computing' },
+            { color: 'yellow', image: this.getRandomBadgeImage(), skill: 'Data Storytelling' },
+            { color: 'grey', image: this.getRandomBadgeImage(), skill: 'Model Deployment' },
             // { disabled: true, text: '🔒' },
             // { disabled: true, text: '🔒' },
             // { disabled: true, text: '🔒' },
@@ -134,7 +165,9 @@ export default {
           ]
         },
       ],
-      userSkills: []
+      userSkills: [],
+      HackQuestOCP,
+      NewCampusOCP
     }
   },
   methods: {
@@ -159,11 +192,11 @@ export default {
     updateCategorySubtitles() {
       this.sidebarItems.forEach(category => {
         const totalSkills = category.gridItems.filter(item => item.skill).length;
-        console.log('total skills', totalSkills);
+        //console.log('total skills', totalSkills);
         const userSkillsInCategory = category.gridItems.filter(item => 
           item.skill && this.userHasSkill(item.skill)
         ).length;
-        console.log(userSkillsInCategory);
+        //console.log(userSkillsInCategory);
         category.subtitle = `${userSkillsInCategory}/${totalSkills}`;
       });
     },
@@ -196,6 +229,13 @@ export default {
         return words.join('<br>');
       }
       return title;
+    },
+    getRandomBadgeImage() {
+      const elements = ['fire', 'lightning', 'nature', 'water'];
+      const types = ['arrows', 'bow', 'icon', 'lamp', 'magehat', 'wand'];
+      const randomElement = elements[Math.floor(Math.random() * elements.length)];
+      const randomType = types[Math.floor(Math.random() * types.length)];
+      return require(`@/assets/badges/badge_${randomElement}_${randomType}.png`);
     }
   },
   created() {
@@ -213,7 +253,7 @@ export default {
 </script>
 
 <style>
-.skills-container {
+.skills-container, .oc-container {
   background: #ddd2c4;
   padding: 25px;
   border-radius: 10px;
@@ -225,5 +265,8 @@ export default {
 .v-card-title {
   word-break: break-word;
   line-height: 1.2;
+}
+.greyed-out {
+  filter: grayscale(100%) opacity(50%);
 }
 </style>
