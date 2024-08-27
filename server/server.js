@@ -186,9 +186,11 @@ app.get("/scrape", async (req, res) => {
 
         //console.log('Extracting issued to...');
         const issuedToElement = document.querySelector(
-          ".certificate-details__recipient-profile"
+          "h3.base-main-card__title"
         );
-        const issuedToHtml = issuedToElement ? issuedToElement.innerHTML : "";
+        const issuedToHtml = issuedToElement
+          ? issuedToElement.textContent.trim()
+          : "";
 
         //console.log('Extracting skills...');
         const skillsList = Array.from(
@@ -199,11 +201,14 @@ app.get("/scrape", async (req, res) => {
           .join(", ");
         //console.log('Extracting certificate title...');
         const certificateTitleElement = document.querySelector(
-          ".base-search-card__title"
+          "img.certificate-image"
         );
-        const certificateTitle = certificateTitleElement
-          ? certificateTitleElement.textContent.trim()
+        const certificateTitleTemp = certificateTitleElement
+          ? certificateTitleElement.getAttribute("alt")
           : "";
+        const certificateTitle = certificateTitleTemp
+          .replace(/^Certificate of completion for\s*/, "")
+          .replace(/\s*content.*$/, "");
 
         //console.log('Extracting description...');
         const descriptionElement = document.querySelector(
@@ -220,7 +225,7 @@ app.get("/scrape", async (req, res) => {
           certificateImage,
           issuedTo: issuedToHtml,
           skills: skillsList,
-          certificateTitle,
+          certificateTitle: certificateTitle,
           description: descriptionText,
         };
       });

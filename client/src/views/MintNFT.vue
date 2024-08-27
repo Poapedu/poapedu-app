@@ -302,6 +302,9 @@
                     {{ skill }}
                   </v-chip>
                 </v-chip-group>
+                <br />
+                <p><strong>Issued To:</strong></p>
+                <p>{{ scrapedContent.issuedTo }}</p>
               </v-card-text>
             </v-card>
 
@@ -739,6 +742,7 @@ export default {
               courseDescription: `${this.data.description}`,
               skills: this.data.skills.split(","),
               courseName: `${this.data.certificateTitle}`,
+              issuedTo: `${this.data.issuedTo}`
             };
             this.showScrapedContent = true;
           } else if (this.data.domain === "cloudskillsboost.google") {
