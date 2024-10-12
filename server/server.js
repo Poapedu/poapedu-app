@@ -4,15 +4,8 @@ const puppeteer = require("puppeteer");
 const { URL } = require("url");
 require("dotenv").config();
 const fs = require("fs");
-const mysql = require("mysql2/promise");
 const Moralis = require("moralis").default;
-
-const db = mysql.createPool({
-  host: `${process.env.PROD_MYSQL_HOST}`,
-  user: `${process.env.PROD_MYSQL_USER}`,
-  password: `${process.env.PROD_MYSQL_PASS}`,
-  database: `${process.env.PROD_MYSQL_DB}`,
-});
+const db = require("./config/dbConfig");
 
 const app = express();
 app.use(cors());
