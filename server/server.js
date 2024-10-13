@@ -417,34 +417,19 @@ app.post("/skills-webhook", (req, res) => {
 // Save profile endpoint
 app.post("/api/save-profile", async (req, res) => {
   const {
-    email, // Take email from the request body, which should be passed from Supabase
+    email,
     wallet_address,
     first_name,
     last_name,
     profile_photo,
     one_liner_bio,
     description,
+    slug,
     learner_id,
   } = req.body;
 
   // Determine the value of hasFilled based on first_name and last_name
   const hasFilled = first_name && last_name ? "1" : "0";
-
-  // const query = `
-  //   INSERT INTO Learners (
-  //     email, wallet_address, first_name, last_name,
-  //     profile_photo, one_liner_bio,
-  //     description, slug, hasFilled
-  //   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  //   ON DUPLICATE KEY UPDATE
-  //     wallet_address = VALUES(wallet_address),
-  //     first_name = VALUES(first_name),
-  //     last_name = VALUES(last_name),
-  //     profile_photo = VALUES(profile_photo),
-  //     one_liner_bio = VALUES(one_liner_bio),
-  //     description = VALUES(description),
-  //     hasFilled = VALUES(hasFilled)
-  // `;
 
   const query = `
   UPDATE Learners
@@ -456,9 +441,11 @@ app.post("/api/save-profile", async (req, res) => {
     profile_photo = ?,
     one_liner_bio = ?,
     description = ?,
-    hasFilled = ?
+    hasFilled = ?,
+    slug = ?
   WHERE learner_id = ?
-`;
+  `;
+
   const values = [
     email,
     wallet_address,
@@ -468,6 +455,7 @@ app.post("/api/save-profile", async (req, res) => {
     one_liner_bio,
     description,
     hasFilled,
+    slug,
     learner_id,
   ];
 
@@ -483,7 +471,14 @@ app.post("/api/save-profile", async (req, res) => {
     res.json({ success: true, message: "Profile saved successfully" });
   } catch (error) {
     console.error("Error saving profile:", error);
-    res.status(500).json({ success: false, message: "Database error" });
+    console.error("SQL Query:", query);
+    console.error("Values:", values);
+    res.status(500).json({ 
+      success: false, 
+      message: "Database error", 
+      error: error.message,
+      sqlMessage: error.sqlMessage 
+    });
   }
 });
 
@@ -832,6 +827,58 @@ app.get("/api/skills/:learner_id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching skills:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Check if a slug is available
+app.get('/api/check-slug', async (req, res) => {
+  const { slug } = req.query;
+  console.log('Checking slug:', slug);
+  
+  try {
+    const [rows] = await db.query('SELECT * FROM Learners WHERE slug = ?', [slug]);
+    
+    if (rows === undefined) {
+      console.error('Query returned undefined');
+      throw new Error('Database query failed');
+    }
+    
+    console.log('Query result:', rows);
+    
+    const available = Array.isArray(rows) ? rows.length === 0 : true;
+    res.json({ available });
+  } catch (error) {
+    console.error('Error checking slug availability:', error);
+    res.status(500).json({ error: 'An error occurred while checking slug availability: ' + error.message });
+  }
+});
+
+// Fetch public profile by slug
+app.get('/api/public-profile/:slug', async (req, res) => {
+  const { slug } = req.params;
+  console.log('Fetching public profile for slug:', slug);
+
+  try {
+    const [rows] = await db.query('SELECT * FROM Learners WHERE slug = ?', [slug]);
+
+    console.log('Query result:', rows);
+
+    if (!Array.isArray(rows)) {
+      console.error('Query did not return an array');
+      throw new Error('Database query failed');
+    }
+
+    if (rows.length === 0) {
+      console.log('Profile not found for slug:', slug);
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    const profile = rows[0];
+    console.log('Profile found:', profile);
+    res.json(profile);
+  } catch (error) {
+    console.error('Error fetching public profile:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the profile: ' + error.message });
   }
 });
 

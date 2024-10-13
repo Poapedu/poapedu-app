@@ -23,10 +23,10 @@
   <script>
   import { mapState, mapActions } from 'vuex'
   import AppHeader from '../components/AppHeader.vue'
+  import AppFooter from '../components/AppFooter.vue'
   import ProfileHeader from '../components/ProfileHeader.vue'
   import Certifications from '../components/CertificationsMod.vue'
   import SkillTree from '../components/SkillTree.vue'
-  import AppFooter from '../components/AppFooter.vue'
   
   export default {
     name: 'UserDashboard',
@@ -41,8 +41,12 @@
       ...mapState(['dbData', 'hasFilled', 'isLoading', 'error'])
     },
     created() {
+      console.log('UserDashboard: created hook');
       if (!this.dbData) {
-        this.fetchUserData()
+        console.log('UserDashboard: Fetching user data');
+        this.fetchUserData();
+      } else {
+        console.log('UserDashboard: User data already present');
       }
     },
     methods: {
