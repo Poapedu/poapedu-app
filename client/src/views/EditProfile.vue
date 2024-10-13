@@ -114,6 +114,44 @@
             </v-col>
           </v-row>
           <v-row>
+            <v-col cols="12" md="12">
+              <div class="form-group">
+                <label for="slug">Profile URL</label>
+                <v-text-field
+                  id="slug"
+                  v-model="form.slug"
+                  hide-details
+                  class="custom-input"
+                  bg-color="white"
+                  density="compact"
+                  variant="solo"
+                  :rules="[rules.required, rules.slug]"
+                  @input="debouncedValidateSlug"
+                  :loading="checkingSlug"
+                  :disabled="checkingSlug"
+                  placeholder="your-custom-url"
+                  persistent-placeholder
+                  maxlength="15"
+                >
+                  <template v-slot:prepend>
+                    <span class="text-body-2 text-grey">
+                      {{ baseUrl }}/profile/
+                    </span>
+                  </template>
+                </v-text-field>
+                <v-alert
+                  v-if="slugError"
+                  type="error"
+                  dense
+                  text
+                  class="mt-2"
+                >
+                  {{ slugError }}
+                </v-alert>
+              </div>
+            </v-col>
+          </v-row>
+          <v-row>
             <v-col cols="12">
               <label class="skills-label">Highlighted Skills</label>
               <div class="skills-tags">
@@ -259,11 +297,14 @@
   </v-app>
 </template>
 
+
 <script>
 import AppHeader from "../components/AppHeader.vue";
 import AppFooter from "../components/AppFooter.vue";
 import { getUserEmail } from "../supabase.js";
 import axios from "axios";
+import debounce from 'lodash/debounce';
+import { getBaseUrl } from '@/utils/urlUtils';
 
 export default {
   name: "EditProfile",
@@ -272,7 +313,6 @@ export default {
     AppFooter,
   },
   mounted() {
-    // Dynamically load the Cloudinary script for image uploads
     const script = document.createElement("script");
     script.src = "https://widget.cloudinary.com/v2.0/global/all.js";
     script.onload = this.initializeCloudinary;
@@ -281,7 +321,6 @@ export default {
   data() {
     return {
       valid: false,
-      // Form data object containing user profile information
       form: {
         profile_photo: "",
         first_name: "",
@@ -296,17 +335,21 @@ export default {
         twitter_url: "",
         discord_url: "",
         learner_id: "",
+        slug: "",
       },
-      // Snackbar configuration for displaying notifications
       snackbar: {
         show: false,
         text: '',
         color: '',
       },
+      checkingSlug: false,
+      slugError: null,
+      baseUrl: getBaseUrl(),
+      originalSlug: '',
       rules: {
         required: value => !!value || 'Field is required',
         url: value => {
-          if (!value) return true; // Allow empty field if not required
+          if (!value) return true;
           const pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
             '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
             '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
@@ -314,52 +357,32 @@ export default {
             '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
             '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
           return pattern.test(value) || 'Please enter a valid URL';
-        }
+        },
+        slug: value => /^[a-z0-9-]{1,15}$/.test(value) || 'Slug must be 1-15 characters long and can only contain lowercase letters, numbers, and hyphens',
       }
     };
   },
   async created() {
     this.form.email = await getUserEmail();
     this.initializeFormData();
+    this.debouncedValidateSlug = debounce(this.validateSlug, 300);
   },
   methods: {
     validateField(fieldName) {
       this.$refs.socialForm.validate();
       if (this.form[fieldName] && !this.rules.url(this.form[fieldName])) {
-        this.form[fieldName] = ''; // Clear invalid input
+        this.form[fieldName] = '';
         this.showSnackbar('Please enter a valid URL', 'error');
       }
     },
-    // Fetch and populate form data from the server
     async initializeFormData() {
       try {
         const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user`, {
           params: { email: this.form.email },
         });
-
         console.log("Fetched user data:", response.data);
-
         if (response.data) {
           const userData = response.data;
-
-          // // Explicitly setting each form field
-          // this.$set(this.form, "profile_photo", userData.profile_photo || "");
-          // this.$set(this.form, "first_name", userData.first_name || "");
-          // this.$set(this.form, "last_name", userData.last_name || "");
-          // this.$set(this.form, "wallet_address", userData.wallet_address || "");
-          // this.$set(this.form, "one_liner_bio", userData.one_liner_bio || "");
-          // this.$set(this.form, "description", userData.description || "");
-          // this.$set(
-          //   this.form,
-          //   "skills",
-          //   userData.skills ? userData.skills.split(",") : []
-          // );
-          // this.$set(this.form, "linkedin_url", userData.linkedin_url || "");
-          // this.$set(this.form, "github_url", userData.github_url || "");
-          // this.$set(this.form, "twitter_url", userData.twitter_url || "");
-          // this.$set(this.form, "discord_url", userData.discord_url || "");
-
-          // Update the entire form object with fetched user data
           this.form = {
             ...this.form,
             learner_id: userData.learner_id || "",
@@ -374,20 +397,34 @@ export default {
             github_url: userData.github_url || "",
             twitter_url: userData.twitter_url || "",
             discord_url: userData.discord_url || "",
+            slug: userData.slug || ""
           };
+          this.originalSlug = userData.slug || "";
         }
       } catch (error) {
         console.error("Error initializing form data:", error);
         this.showSnackbar('Error fetching user data', 'error');
       }
     },
-    // Navigate back to the dashboard
     goBack() {
       this.$router.push("/dashboard");
     },
     // Save profile information
     async saveProfile() {
       if (this.$refs.form.validate()) {
+        // Validate slug one last time before saving
+        await this.validateSlug();
+        if (this.slugError) {
+          this.showSnackbar('Please fix the profile URL error before saving', 'error');
+          return;
+        }
+
+        // Ensure the slug meets the requirements
+        if (!this.rules.slug(this.form.slug)) {
+          this.showSnackbar('Profile URL must be 1-15 characters long and can only contain lowercase letters, numbers, and hyphens', 'error');
+          return;
+        }
+
         try {
           const response = await fetch(
             `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/save-profile`,
@@ -402,20 +439,19 @@ export default {
           const data = await response.json();
           if (data.success) {
             this.showSnackbar('Profile saved successfully!', 'success');
-            await this.initializeFormData(); // Refresh the form data
+            this.originalSlug = this.form.slug;
+            await this.initializeFormData();
           } else {
             this.showSnackbar('Failed to save profile: ' + data.message, 'error');
           }
         } catch (error) {
-          console.error("Save failed", error);
+          //console.error("Save failed", error);
           this.showSnackbar('An error occurred while saving the profile', 'error');
         }
       }
     },
-    // Save social account information
     async saveSocials() {
       if (this.$refs.socialForm.validate()) {
-
         const socialData = {
           learner_id: this.form.learner_id,
           linkedin_url: this.form.linkedin_url || null,
@@ -423,12 +459,9 @@ export default {
           twitter_url: this.form.twitter_url || null,
           discord_url: this.form.discord_url || null,
         };
-
-        // Filter out null values
         const filteredSocialData = Object.fromEntries(
           Object.entries(socialData).filter(([, value]) => value != null)
         );
-        
         try {
           const response = await fetch(
             `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/save-socials`,
@@ -441,34 +474,29 @@ export default {
             }
           );
           const data = await response.json();
-          console.log("Save socials response:", data); // For debugging
+          //console.log("Save socials response:", data);
           if (data.success) {
             this.showSnackbar('Social accounts updated successfully!', 'success');
-            await this.initializeFormData(); // Refresh the form data
+            await this.initializeFormData();
           } else {
             this.showSnackbar('Failed to update social accounts: ' + data.message, 'error');
           }
         } catch (error) {
-          console.error("Save failed", error);
+          //console.error("Save failed", error);
           this.showSnackbar('An error occurred while updating social accounts', 'error');
         }
       }
     },
-    // Add a new skill (placeholder function)
     addSkill() {
-      // Logic to add a new skill, e.g., opening a modal for input
-      console.log("Add skill clicked");
+      //console.log("Add skill clicked");
     },
-    // Display a notification using the snackbar
     showSnackbar(text, color) {
       this.snackbar.text = text;
       this.snackbar.color = color;
       this.snackbar.show = true;
     },
-    // Update profile photo on the server
     async updateProfilePhoto(avatarUrl) {
       try {
-        //console.log(this.form.learner_id);
         const response = await axios.post(
           `${process.env.VUE_APP_LOCAL_SERVER_URL}/api/update-profile-photo`,
           {
@@ -479,10 +507,9 @@ export default {
         console.log(response.data.message);
         this.form.profile_photo = avatarUrl;
       } catch (error) {
-        console.error("Error updating profile photo:", error);
+        //console.error("Error updating profile photo:", error);
       }
     },
-    // Open Cloudinary upload widget for image uploads
     openUploadModal(type) {
       window.cloudinary
         .openUploadWidget(
@@ -494,18 +521,86 @@ export default {
             if (!error && result && result.event === "success") {
               if (type === "profile_photo") {
                 const avatarUrl = result.info.secure_url;
-                //console.log(avatarUrl);
                 this.updateProfilePhoto(avatarUrl);
               } else if (type === "profile_banner") {
                 this.bannerUrl = result.info.secure_url;
                 this.updateProfileBanner();
               } else {
-                console.log("unknown call");
+                //console.log("unknown call");
               }
             }
           }
         )
         .open();
+    },
+    async validateSlug() {
+      this.slugError = null;
+      if (!this.form.slug) return;
+
+      if (!this.rules.slug(this.form.slug)) {
+        this.slugError = 'Profile URL must be 1-15 characters long and can only contain lowercase letters, numbers, and hyphens';
+        return;
+      }
+
+      if (this.form.slug === this.originalSlug) {
+        this.slugError = null;
+        return;
+      }
+
+      this.checkingSlug = true;
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/check-slug`, {
+          params: { slug: this.form.slug }
+        });
+        if (!response.data.available) {
+          this.slugError = 'This profile URL is already taken. Please choose another.';
+        }
+      } catch (error) {
+        //console.error('Error checking slug availability:', error);
+        this.slugError = 'An error occurred while checking slug availability. Please try again.';
+      } finally {
+        this.checkingSlug = false;
+      }
+    },
+    toggleEdit() {
+      if (this.isEditing) {
+        this.saveSlug();
+      } else {
+        this.isEditing = true;
+      }
+    },
+    async saveSlug() {
+      if (this.form.slug === this.originalSlug) {
+        this.isEditing = false;
+        return;
+      }
+
+      if (!this.rules.slug(this.form.slug)) {
+        this.slugError = 'Slug can only contain lowercase letters, numbers, and hyphens';
+        return;
+      }
+
+      try {
+        const response = await axios.post(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/update-slug`, {
+          learner_id: this.form.learner_id,
+          new_slug: this.form.slug
+        });
+
+        if (response.data.success) {
+          this.showSnackbar('Profile URL updated successfully!', 'success');
+          this.originalSlug = this.form.slug;
+          this.slugError = null;
+        } else {
+          this.slugError = 'Failed to update profile URL. Please try again.';
+          this.form.slug = this.originalSlug;
+        }
+      } catch (error) {
+        //console.error('Error updating slug:', error);
+        this.slugError = 'An error occurred while updating the profile URL.';
+        this.form.slug = this.originalSlug;
+      }
+
+      this.isEditing = false;
     },
   },
 };
@@ -605,7 +700,6 @@ export default {
   margin-right: 5px;
 }
 
-/* Custom Input Field Styles */
 .custom-input .v-input__control {
   background-color: white;
 }
@@ -624,5 +718,13 @@ export default {
   margin-bottom: 5px;
   font-weight: bold;
   color: #2c2c2c;
+}
+
+.custom-input ::v-deep .v-field__prepend-inner {
+  padding-right: 0;
+}
+
+.custom-input ::v-deep .v-field__append-inner {
+  cursor: pointer;
 }
 </style>

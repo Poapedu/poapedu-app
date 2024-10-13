@@ -4,6 +4,8 @@ import UserDashboard from "@/views/UserDashboard.vue";
 import EditProfile from "@/views/EditProfile.vue";
 import SignInPage from "@/views/SignInPage.vue";
 import MintNFT from "@/views/MintNFT.vue";
+import PublicProfile from "@/views/PublicProfile.vue";
+import NotFound from "@/views/NotFound.vue"
 import { supabase } from "@/supabase";
 
 const routes = [
@@ -14,6 +16,11 @@ const routes = [
     meta: {
       title: "poapedu | if you got it, flaunt it",
     },
+  },
+  {
+    path: "/profile/:slug",
+    name: "PublicProfile",
+    component: PublicProfile,
   },
   {
     path: "/dashboard",
@@ -39,9 +46,9 @@ const routes = [
     component: SignInPage,
   },
   {
-    path: "/profile/:username",
-    name: "PublicProfile",
-    component: () => import("@/views/PublicProfile.vue"),
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: NotFound
   },
 ];
 
@@ -51,6 +58,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+  //console.log(`Router beforeEach - Navigating from: ${from.path} to: ${to.path}`);
   const { title } = to.meta;
   const defaultTitle = "poapedu | the only builder's profile you need";
 
@@ -59,11 +67,23 @@ router.beforeEach(async (to, from, next) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  //console.log(`Router beforeEach - Session exists: ${!!session}`);
+  
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  //console.log(`Route requires auth: ${requiresAuth}`);
 
-  if (requiresAuth && !session) {
-    next("/"); // Redirect to login if not authenticated
+  // Check if the route is a public profile route
+  if (to.name === 'PublicProfile') {
+    //console.log('Accessing public profile, allowing without auth');
+    next();
+  } else if (requiresAuth && !session) {
+    //console.log('Auth required but no session, redirecting to home');
+    next("/");
+  } else if (to.path === "/" && session) {
+    //console.log('Home accessed with session, redirecting to dashboard');
+    next("/dashboard");
   } else {
+    //console.log('Proceeding to requested route');
     next();
   }
 });
