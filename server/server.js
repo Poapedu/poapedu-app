@@ -3,13 +3,14 @@ const cors = require("cors");
 const puppeteer = require("puppeteer");
 const { URL } = require("url");
 require("dotenv").config();
-const fs = require("fs");
 
+// add configs
 const Moralis = require("./config/moralisConfig");
 const db = require("./config/dbConfig");
 
 // add routes
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 const app = express();
 app.use(cors());
@@ -26,23 +27,6 @@ app.use(express.static("public"));
     console.error("Failed to start Moralis:", error);
   }
 })();
-
-// /**
-//  * Newsletter subscription API
-//  */
-// app.post("/subscribe", (req, res) => {
-//   const { email } = req.body;
-//   const sql = "INSERT INTO NewsletterSubscribers (email) VALUES (?)";
-
-//   db.query(sql, [email], (err, result) => {
-//     if (err) {
-//       console.error("Database error:", err);
-//       res.status(500).json({ success: false, message: "Subscription failed" });
-//     } else {
-//       res.json({ success: true, message: "Subscription successful" });
-//     }
-//   });
-// });
 
 app.get("/scrape", async (req, res) => {
   const { url: pageUrl } = req.query;
@@ -411,79 +395,6 @@ app.post("/skills-webhook", (req, res) => {
   });
 });
 
-// Save profile endpoint
-app.post("/api/save-profile", async (req, res) => {
-  const {
-    email, // Take email from the request body, which should be passed from Supabase
-    wallet_address,
-    first_name,
-    last_name,
-    profile_photo,
-    one_liner_bio,
-    description,
-    learner_id,
-  } = req.body;
-
-  // Determine the value of hasFilled based on first_name and last_name
-  const hasFilled = first_name && last_name ? "1" : "0";
-
-  // const query = `
-  //   INSERT INTO Learners (
-  //     email, wallet_address, first_name, last_name,
-  //     profile_photo, one_liner_bio,
-  //     description, slug, hasFilled
-  //   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  //   ON DUPLICATE KEY UPDATE
-  //     wallet_address = VALUES(wallet_address),
-  //     first_name = VALUES(first_name),
-  //     last_name = VALUES(last_name),
-  //     profile_photo = VALUES(profile_photo),
-  //     one_liner_bio = VALUES(one_liner_bio),
-  //     description = VALUES(description),
-  //     hasFilled = VALUES(hasFilled)
-  // `;
-
-  const query = `
-  UPDATE Learners
-  SET
-    email = ?,
-    wallet_address = ?,
-    first_name = ?,
-    last_name = ?,
-    profile_photo = ?,
-    one_liner_bio = ?,
-    description = ?,
-    hasFilled = ?
-  WHERE learner_id = ?
-`;
-  const values = [
-    email,
-    wallet_address,
-    first_name,
-    last_name,
-    profile_photo,
-    one_liner_bio,
-    description,
-    hasFilled,
-    learner_id,
-  ];
-
-  try {
-    const [result] = await db.query(query, values);
-
-    if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found or no changes made" });
-    }
-
-    res.json({ success: true, message: "Profile saved successfully" });
-  } catch (error) {
-    console.error("Error saving profile:", error);
-    res.status(500).json({ success: false, message: "Database error" });
-  }
-});
-
 // Save socials endpoint
 app.post("/api/save-socials", async (req, res) => {
   const { learner_id, linkedin_url, twitter_url, discord_url, github_url } =
@@ -833,6 +744,7 @@ app.get("/api/skills/:learner_id", async (req, res) => {
 });
 
 app.use("/", newsletterRoutes); // This will handle /subscribe
+app.use("/api", profileRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
