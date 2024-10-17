@@ -4,8 +4,12 @@ const puppeteer = require("puppeteer");
 const { URL } = require("url");
 require("dotenv").config();
 const fs = require("fs");
-const Moralis = require("moralis").default;
+
+const Moralis = require("./config/moralisConfig");
 const db = require("./config/dbConfig");
+
+// add routes
+const newsletterRoutes = require("./routes/newsletterRoutes");
 
 const app = express();
 app.use(cors());
@@ -23,22 +27,22 @@ app.use(express.static("public"));
   }
 })();
 
-/**
- * Newsletter subscription API
- */
-app.post("/subscribe", (req, res) => {
-  const { email } = req.body;
-  const sql = "INSERT INTO NewsletterSubscribers (email) VALUES (?)";
+// /**
+//  * Newsletter subscription API
+//  */
+// app.post("/subscribe", (req, res) => {
+//   const { email } = req.body;
+//   const sql = "INSERT INTO NewsletterSubscribers (email) VALUES (?)";
 
-  db.query(sql, [email], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      res.status(500).json({ success: false, message: "Subscription failed" });
-    } else {
-      res.json({ success: true, message: "Subscription successful" });
-    }
-  });
-});
+//   db.query(sql, [email], (err, result) => {
+//     if (err) {
+//       console.error("Database error:", err);
+//       res.status(500).json({ success: false, message: "Subscription failed" });
+//     } else {
+//       res.json({ success: true, message: "Subscription successful" });
+//     }
+//   });
+// });
 
 app.get("/scrape", async (req, res) => {
   const { url: pageUrl } = req.query;
@@ -827,6 +831,8 @@ app.get("/api/skills/:learner_id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.use("/", newsletterRoutes); // This will handle /subscribe
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
