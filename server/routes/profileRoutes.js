@@ -3,7 +3,7 @@ const profileController = require("../controllers/profileController");
 
 const router = express.Router();
 
-// Define the /save-profile route
 router.post("/save-profile", profileController.saveProfile);
+router.post("/save-socials", profileController.saveSocials);
 
 module.exports = router;
