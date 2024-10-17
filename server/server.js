@@ -11,6 +11,7 @@ const db = require("./config/dbConfig");
 // add routes
 const newsletterRoutes = require("./routes/newsletterRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const skillsRoutes = require("./routes/skillsRoutes");
 
 const app = express();
 app.use(cors());
@@ -292,64 +293,6 @@ const getSkillId = async (skillName) => {
   }
 };
 
-app.post("/api/save-skills", async (req, res) => {
-  const { email, skills } = req.body;
-
-  if (!email || !Array.isArray(skills)) {
-    return res.status(400).json({ message: "Invalid data" });
-  }
-
-  // Preprocess the skills: lowercase and trim
-  const formattedSkills = skills.map((skill) => skill.toLowerCase().trim());
-
-  const connection = await db.getConnection(); // Get a connection from the pool
-
-  try {
-    // Fetch the learner_id using the email
-    const learnerIdQuery = "SELECT learner_id FROM Learners WHERE email = ?";
-    const [learnerResult] = await connection.query(learnerIdQuery, [email]);
-
-    if (learnerResult.length === 0) {
-      return res.status(404).json({ message: "Learner not found" });
-    }
-
-    const learnerId = learnerResult[0].learner_id;
-
-    // Start a transaction
-    await connection.beginTransaction();
-
-    // Process each skill
-    const skillIds = [];
-    for (const skill of formattedSkills) {
-      const skillId = await getSkillId(skill);
-      skillIds.push(skillId);
-    }
-
-    // Insert the learner-skill relationships into LearnerSkills table
-    const insertValues = skillIds.map((id) => [learnerId, id]);
-    const insertQuery =
-      "INSERT INTO LearnerSkills (learner_id, skill_id) VALUES ?";
-
-    await connection.query(insertQuery, [insertValues]);
-
-    // Commit the transaction
-    await connection.commit();
-
-    res.json({
-      message: "Skills saved successfully",
-      learnerId,
-      skills: formattedSkills,
-    });
-  } catch (error) {
-    // Rollback the transaction in case of error
-    await connection.rollback();
-    console.error("Error saving skills:", error);
-    res.status(500).json({ message: "Database error" });
-  } finally {
-    connection.release(); // Release the connection back to the pool
-  }
-});
-
 // Webhook endpoint to parse skills JSON data and insert into our tables.
 app.post("/skills-webhook", (req, res) => {
   const { userid, skills } = req.body;
@@ -393,64 +336,6 @@ app.post("/skills-webhook", (req, res) => {
       }
     });
   });
-});
-
-// Save socials endpoint
-app.post("/api/save-socials", async (req, res) => {
-  const { learner_id, linkedin_url, twitter_url, discord_url, github_url } =
-    req.body;
-
-  const updateFields = [];
-  const values = [];
-
-  if (linkedin_url !== undefined) {
-    updateFields.push("linkedin_url = ?");
-    values.push(linkedin_url);
-  }
-  if (twitter_url !== undefined) {
-    updateFields.push("twitter_url = ?");
-    values.push(twitter_url);
-  }
-  if (discord_url !== undefined) {
-    updateFields.push("discord_url = ?");
-    values.push(discord_url);
-  }
-  if (github_url !== undefined) {
-    updateFields.push("github_url = ?");
-    values.push(github_url);
-  }
-
-  if (updateFields.length === 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "No fields to update" });
-  }
-
-  values.push(learner_id);
-
-  const query = `
-    UPDATE Learners
-    SET ${updateFields.join(", ")}
-    WHERE learner_id = ?
-  `;
-
-  try {
-    const [result] = await db.query(query, values);
-
-    if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found or no changes made" });
-    }
-
-    res.json({
-      success: true,
-      message: "Social accounts updated successfully",
-    });
-  } catch (error) {
-    console.error("Error updating social accounts:", error);
-    res.status(500).json({ success: false, message: "Database error" });
-  }
 });
 
 // Endpoint to update profile photo
@@ -745,6 +630,7 @@ app.get("/api/skills/:learner_id", async (req, res) => {
 
 app.use("/", newsletterRoutes); // This will handle /subscribe
 app.use("/api", profileRoutes);
+app.use("/api", skillsRoutes); // Use the skills routes
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
