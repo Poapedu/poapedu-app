@@ -11,6 +11,8 @@ import { loadFonts } from './plugins/webfontloader'
 loadFonts();
 
 const app = createApp(App);
+app.config.productionTip = false
+app.config.silent = true
 app.use(router);
 app.use(vuetify);
 app.use(supabasePlugin);

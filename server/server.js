@@ -716,16 +716,16 @@ app.post("/supabase-webhook", async (req, res) => {
 });
 
 app.get("/api/user", async (req, res) => {
-  const { email } = req.query;
+  const { learner_id } = req.query;
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!learner_id) {
+    return res.status(400).json({ error: "Learner ID is required" });
   }
 
   try {
     // Query the MySQL database using the email
-    const query = "SELECT * FROM Learners WHERE email = ?";
-    const [rows] = await db.execute(query, [email]);
+    const query = "SELECT * FROM Learners WHERE learner_id = ?";
+    const [rows] = await db.execute(query, [learner_id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -815,14 +815,10 @@ app.get("/api/skills/:learner_id", async (req, res) => {
   try {
     const [results] = await db.query(query, [learnerId]);
 
-    if (results.length === 0) {
-      return res.status(404).json({ skills: [] });
-    }
-
     // Extract skill names from the results
     const skills = results.map((row) => row.name);
 
-    // Return the skills as an array
+    // Always return a 200 status, with an empty array if no skills found
     res.json({ skills });
   } catch (error) {
     console.error("Error fetching skills:", error);
@@ -879,6 +875,87 @@ app.get('/api/public-profile/:slug', async (req, res) => {
   } catch (error) {
     console.error('Error fetching public profile:', error);
     res.status(500).json({ error: 'An error occurred while fetching the profile: ' + error.message });
+  }
+});
+
+app.post("/api/ocid-auth", async (req, res) => {
+  const { edu_username, eth_address } = req.body;
+
+  if (!edu_username || !eth_address) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // Check if the user already exists
+    const [existingUser] = await db.query(
+      "SELECT learner_id FROM Learners WHERE slug = ? OR wallet_address = ?",
+      [edu_username, eth_address]
+    );
+
+    let learnerId;
+
+    if (existingUser.length > 0) {
+      // User exists, update last_sign_in_at
+      learnerId = existingUser[0].learner_id;
+      await db.query(
+        "UPDATE Learners SET last_sign_in_at = CURRENT_TIMESTAMP WHERE learner_id = ?",
+        [learnerId]
+      );
+    } else {
+      // User doesn't exist, insert new row
+      const [result] = await db.query(
+        "INSERT INTO Learners (slug, wallet_address, last_sign_in_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+        [edu_username, eth_address]
+      );
+      learnerId = result.insertId;
+    }
+
+    res.json({ success: true, learnerId: learnerId });
+  } catch (error) {
+    console.error("Error handling OCID authentication:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/user-by-id", async (req, res) => {
+  const { learner_id } = req.query;
+
+  if (!learner_id) {
+    return res.status(400).json({ error: "Learner ID is required" });
+  }
+
+  try {
+    const query = "SELECT * FROM Learners WHERE learner_id = ?";
+    const [rows] = await db.execute(query, [learner_id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = rows[0];
+    res.json({
+      learner_id: user.learner_id,
+      wallet_address: user.wallet_address,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      profile_photo: user.profile_photo,
+      profile_banner: user.profile_banner,
+      linkedin_url: user.linkedin_url,
+      twitter_url: user.twitter_url,
+      discord_url: user.discord_url,
+      github_url: user.github_url,
+      devto_url: user.devto_url,
+      website_url: user.website_url,
+      one_liner_bio: user.one_liner_bio,
+      description: user.description,
+      slug: user.slug,
+      bio: user.bio,
+      email: user.email,
+      hasFilled: user.hasFilled,
+    });
+  } catch (error) {
+    console.error("Database query failed:", error);
+    res.status(500).json({ error: "Database query failed" });
   }
 });
 

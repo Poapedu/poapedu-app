@@ -45,9 +45,6 @@
         </v-menu>
         <v-btn v-else color="white" text @click="goToSignIn">Sign In</v-btn>
       </template>
-      <!-- <template v-else>
-        
-      </template> -->
     </v-row>
   </v-app-bar>
 </template>
@@ -64,15 +61,10 @@ export default {
     const route = useRoute();
     return { route };
   },
-  data() {
-    return {
-      session: null
-    };
-  },
   computed: {
     ...mapState(['dbData']),
     isLoggedIn() {
-      return !!this.session;
+      return !!localStorage.getItem('supabase.auth.token') || !!localStorage.getItem('ocid_auth');
     },
     isPublicProfilePage() {
       return this.route.name === 'PublicProfile';
@@ -90,14 +82,14 @@ export default {
       } else if (lastName) {
         return lastName[0].toUpperCase();
       } else {
-        return ''; // Default initial if no name is available
+        return '';
       }
     },
     userFullName() {
       return `${this.dbData?.first_name || ''} ${this.dbData?.last_name || ''}`;
     },
     userEmail() {
-      return this.session?.user?.email || '';
+      return this.dbData?.email || '';
     }
   },
   methods: {
@@ -112,27 +104,14 @@ export default {
     },
     async signOut() {
       try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-
+        await supabase.auth.signOut();
         authStore.clearSession();
-        this.session = null;
-        //console.log("User signed out successfully.");
+        localStorage.removeItem('ocid_auth');
         this.$router.push({ name: "Home" });
       } catch (error) {
-        //console.error("Error signing out:", error.message);
+        console.error("Error signing out:", error.message);
       }
-    },
-    async checkSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      this.session = session;
     }
-  },
-  async created() {
-    await this.checkSession();
-    supabase.auth.onAuthStateChange((_, session) => {
-      this.session = session;
-    });
   }
 };
 </script>

@@ -41,12 +41,12 @@
       ...mapState(['dbData', 'hasFilled', 'isLoading', 'error'])
     },
     created() {
-      console.log('UserDashboard: created hook');
+      //console.log('UserDashboard: created hook');
       if (!this.dbData) {
-        console.log('UserDashboard: Fetching user data');
+        //console.log('UserDashboard: Fetching user data');
         this.fetchUserData();
       } else {
-        console.log('UserDashboard: User data already present');
+        //console.log('UserDashboard: User data already present');
       }
     },
     methods: {

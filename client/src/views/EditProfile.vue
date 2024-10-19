@@ -25,7 +25,7 @@
               <h2 class="profile-header"><b>PROFILE DETAILS</b></h2>
             </v-col>
             <v-col cols="6" class="d-flex justify-end">
-              <v-btn class="save-btn" @click="saveProfile">
+              <v-btn class="save-btn" @click="saveProfile" :disabled="!form.email || !valid">
                 <v-icon left>mdi-floppy</v-icon>
                 Save Changes
               </v-btn>
@@ -66,6 +66,7 @@
                   bg-color="white"
                   density="compact"
                   variant="solo"
+                  validate-on-blur
                 ></v-text-field>
               </div>
             </v-col>
@@ -80,21 +81,36 @@
                   bg-color="white"
                   density="compact"
                   variant="solo"
+                  validate-on-blur
                 ></v-text-field>
               </div>
             </v-col>
             <v-col cols="12" md="6">
               <div class="form-group">
                 <label for="email">Email</label>
-                <v-text-field
+                <!-- <v-text-field
                   id="email"
                   v-model="form.email"
-                  readonly
+                  :readonly="!isEmailEditable"
                   hide-details
                   class="custom-input"
                   bg-color="white"
                   density="compact"
                   variant="solo"
+                  :rules="[rules.required, rules.email]"
+                ></v-text-field> -->
+                <v-text-field
+                  id="email"
+                  v-model="form.email"
+                  type="email"
+                  class="custom-input"
+                  variant="solo"
+                  bg-color="white"
+                  density="compact"
+                  placeholder="Enter your email"
+                  @input="handleEmailInput"
+                  :rules="[rules.required, rules.email]"
+                  validate-on-blur
                 ></v-text-field>
               </div>
             </v-col>
@@ -283,7 +299,20 @@
           </v-col>
         </v-row>
       </v-container>
-
+      <v-dialog v-model="skillsDialog" max-width="500px">
+        <v-card>
+          <v-card-title>Skills Information</v-card-title>
+          <v-card-text>
+            Skills are auto-populated when you mint your certificates on-chain. 
+            Would you like to go to the minting page?
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="goToMintNFT">Go to Mint NFT</v-btn>
+            <v-btn color="grey darken-1" text @click="skillsDialog = false">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-snackbar
         v-model="snackbar.show"
         :color="snackbar.color"
@@ -301,13 +330,21 @@
 <script>
 import AppHeader from "../components/AppHeader.vue";
 import AppFooter from "../components/AppFooter.vue";
-import { getUserEmail } from "../supabase.js";
+import { mapState, mapGetters, mapActions } from "vuex";
+import { getUserEmail, getUserIdentifier } from "../supabase.js";
 import axios from "axios";
 import debounce from 'lodash/debounce';
 import { getBaseUrl } from '@/utils/urlUtils';
 
 export default {
   name: "EditProfile",
+  computed: {
+    ...mapState(["dbData", "hasFilled"]),
+    ...mapGetters(["isDataLoaded"]),
+    isEmailEditable() {
+      return !this.form.email && this.form.learner_id;
+    }
+  },
   components: {
     AppHeader,
     AppFooter,
@@ -321,6 +358,7 @@ export default {
   data() {
     return {
       valid: false,
+      skillsDialog: false,
       form: {
         profile_photo: "",
         first_name: "",
@@ -359,15 +397,38 @@ export default {
           return pattern.test(value) || 'Please enter a valid URL';
         },
         slug: value => /^[a-z0-9-]{1,15}$/.test(value) || 'Slug must be 1-15 characters long and can only contain lowercase letters, numbers, and hyphens',
-      }
+        email: value => {
+          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return pattern.test(value) || 'Invalid e-mail.';
+        }
+      },
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      if (!vm.isDataLoaded) {
+        vm.fetchUserData().then(() => {
+          vm.initializeFormData();
+        });
+      } else {
+        vm.initializeFormData();
+      }
+    });
   },
   async created() {
     this.form.email = await getUserEmail();
     this.initializeFormData();
     this.debouncedValidateSlug = debounce(this.validateSlug, 300);
+    //console.log('UserDashboard: created hook');
+    if (!this.dbData) {
+      //console.log('UserDashboard: Fetching user data');
+      this.fetchUserData();
+    } else {
+      //console.log('UserDashboard: User data already present');
+    }
   },
   methods: {
+    ...mapActions(['fetchUserData']),
     validateField(fieldName) {
       this.$refs.socialForm.validate();
       if (this.form[fieldName] && !this.rules.url(this.form[fieldName])) {
@@ -375,35 +436,87 @@ export default {
         this.showSnackbar('Please enter a valid URL', 'error');
       }
     },
+    // async initializeFormData() {
+    //   try {
+    //     // First, set the learner_id
+    //     this.form.learner_id = this.dbData?.learner_id || "";
+        
+    //     // Then, fetch the user data
+    //     const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user`, {
+    //       params: { learner_id: this.form.learner_id },
+    //     });
+    //     console.log("Fetched user data:", response.data);
+    //     if (response.data) {
+    //       const userData = response.data;
+    //       this.form = {
+    //         ...this.form,
+    //         ...this.dbData,
+    //         profile_photo: userData.profile_photo || "",
+    //         first_name: userData.first_name || "",
+    //         last_name: userData.last_name || "",
+    //         email: userData.email || "",
+    //         wallet_address: userData.wallet_address || "",
+    //         one_liner_bio: userData.one_liner_bio || "",
+    //         description: userData.description || "",
+    //         skills: userData.skills ? userData.skills.split(",") : [],
+    //         linkedin_url: userData.linkedin_url || "",
+    //         github_url: userData.github_url || "",
+    //         twitter_url: userData.twitter_url || "",
+    //         discord_url: userData.discord_url || "",
+    //         slug: userData.slug || ""
+    //       };
+    //       this.originalSlug = userData.slug || "";
+    //     }
+    //   } catch (error) {
+    //     console.error("Error initializing form data:", error);
+    //     this.showSnackbar('Error fetching user data', 'error');
+    //   }
+    // },
     async initializeFormData() {
-      try {
-        const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user`, {
-          params: { email: this.form.email },
-        });
-        console.log("Fetched user data:", response.data);
-        if (response.data) {
-          const userData = response.data;
-          this.form = {
-            ...this.form,
-            learner_id: userData.learner_id || "",
-            profile_photo: userData.profile_photo || "",
-            first_name: userData.first_name || "",
-            last_name: userData.last_name || "",
-            wallet_address: userData.wallet_address || "",
-            one_liner_bio: userData.one_liner_bio || "",
-            description: userData.description || "",
-            skills: userData.skills ? userData.skills.split(",") : [],
-            linkedin_url: userData.linkedin_url || "",
-            github_url: userData.github_url || "",
-            twitter_url: userData.twitter_url || "",
-            discord_url: userData.discord_url || "",
-            slug: userData.slug || ""
-          };
-          this.originalSlug = userData.slug || "";
+      if (!this.dbData) {
+        const identifier = await getUserIdentifier();
+        if (identifier) {
+          try {
+            const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user`, {
+              params: { [identifier.type]: identifier.value }
+            });
+            if (response.data) {
+              const userData = response.data;
+              this.form = {
+                ...this.form,
+                ...userData,
+                profile_photo: userData.profile_photo || "",
+                first_name: userData.first_name || "",
+                last_name: userData.last_name || "",
+                email: userData.email || "",
+                wallet_address: userData.wallet_address || "",
+                one_liner_bio: userData.one_liner_bio || "",
+                description: userData.description || "",
+                skills: userData.skills ? userData.skills.split(",") : [],
+                linkedin_url: userData.linkedin_url || "",
+                github_url: userData.github_url || "",
+                twitter_url: userData.twitter_url || "",
+                discord_url: userData.discord_url || "",
+                slug: userData.slug || ""
+              };
+              this.originalSlug = userData.slug || "";
+            }
+            this.originalSlug = response.data.slug || "";
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+            // Handle error (e.g., show a notification to the user)
+          }
+        } else {
+          console.error("No user identifier found");
+          // Handle this case (e.g., redirect to login page)
         }
-      } catch (error) {
-        console.error("Error initializing form data:", error);
-        this.showSnackbar('Error fetching user data', 'error');
+      } else {
+        this.form = {
+          ...this.form,
+          ...this.dbData,
+          skills: this.dbData.skills ? this.dbData.skills.split(",") : [],
+        };
+        this.originalSlug = this.dbData.slug || "";
       }
     },
     goBack() {
@@ -488,7 +601,7 @@ export default {
       }
     },
     addSkill() {
-      //console.log("Add skill clicked");
+      this.skillsDialog = true;
     },
     showSnackbar(text, color) {
       this.snackbar.text = text;
@@ -516,6 +629,12 @@ export default {
           {
             cloud_name: `${process.env.VUE_APP_CLOUDINARY_CLOUD_NAME}`,
             upload_preset: `${process.env.VUE_APP_CLOUDINARY_UPLOAD_PRESET}`,
+            sources: [ 'local', 'url', 'image_search', 'camera', 'unsplash', 'google_drive', 'dropbox'],
+            maxFileSize: 200000,
+            clientAllowedFormats: ["webp", "jpg", "gif", "png", "jpeg"],
+            multiple: false,
+            maxFiles: 1,
+            singleUploadAutoClose: true
           },
           (error, result) => {
             if (!error && result && result.event === "success") {
@@ -602,6 +721,14 @@ export default {
 
       this.isEditing = false;
     },
+    goToMintNFT() {
+      this.skillsDialog = false;
+      this.$router.push("/mint-nft");
+    },
+    handleEmailInput(event) {
+      console.log("Email input:", event.target.value);
+      // This will log the current value of the email input to the console
+    }
   },
 };
 </script>

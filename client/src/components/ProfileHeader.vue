@@ -245,6 +245,12 @@ export default {
           {
             cloud_name: `${process.env.VUE_APP_CLOUDINARY_CLOUD_NAME}`,
             upload_preset: `${process.env.VUE_APP_CLOUDINARY_UPLOAD_PRESET}`,
+            sources: [ 'local', 'url', 'image_search', 'camera', 'unsplash', 'google_drive', 'dropbox'],
+            maxFileSize: 400000,
+            clientAllowedFormats: ["webp", "jpg", "gif", "png", "jpeg"],
+            multiple: false,
+            maxFiles: 1,
+            singleUploadAutoClose: true
           },
           (error, result) => {
             if (!error && result && result.event === "success") {

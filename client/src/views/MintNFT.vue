@@ -12,7 +12,8 @@
         </v-row>
 
         <v-container class="mint-wallet rounded-lg">
-          <h2 class="mb-12">Mint NFT from Wallets</h2>
+          <h2 class="">Mint NFT from Wallets</h2>
+          <p class="mb-12">Connect your preferred crypto wallet to mint NFTs directly from your account - currently supporting MetaMask with more options coming soon.</p>
           <v-row>
             <v-col
               v-for="wallet in wallets"
@@ -109,7 +110,8 @@
         <v-divider class="mint-nft-divider"></v-divider>
 
         <v-container class="mint-wallet rounded-lg">
-          <h2 class="mb-12">Mint NFT from Certificates</h2>
+          <h2>Mint NFT from Certificates</h2>
+          <p class="mb-12">Enter the URL of your online certificate to automatically generate NFT data, allowing you to tokenize your achievements and credentials. We currently suppoer linkedin.com, credly, credential.net, cloudskillsboost.google.</p>
           <v-col cols="12" md="12">
             <div class="form-group">
               <label for="certificate">Insert Certificate URL</label>
@@ -132,6 +134,7 @@
               <v-btn
                 rounded="xl"
                 :disabled="loading"
+                color="#CBC0B3"
                 class="mt-4 generate-btn"
                 @click="generateData"
               >

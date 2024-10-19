@@ -7,11 +7,16 @@ export default createStore({
     dbData: null,
     hasFilled: false,
     isLoading: false,
-    error: null
+    error: null,
+    dataLoaded: false
+  },
+  getters: {
+    isDataLoaded: state => state.dataLoaded
   },
   mutations: {
     setDbData(state, data) {
       state.dbData = data;
+      state.dataLoaded = true;
     },
     setHasFilled(state, status) {
       state.hasFilled = status;
@@ -28,29 +33,43 @@ export default createStore({
   },
   actions: {
     async fetchUserData({ commit, state }) {
-      // If data is already loaded, don't fetch again
+
       if (state.dbData) return;
 
       commit('setLoading', true);
       commit('setError', null);
+
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) throw error;
+        let userData;
+        const learnerId = localStorage.getItem('learner_id');
 
-        if (user && user.email) {
-          const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user`, {
-            params: { email: user.email },
+        if (learnerId) {
+          // Fetch user data by learner_id
+          const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user-by-id`, {
+            params: { learner_id: learnerId },
           });
-
-          if (response.data) {
-            console.log("Data retrieved:", response.data);
-            commit("setDbData", response.data);
-            commit("setHasFilled", response.data.hasFilled);
-          } else {
-            throw new Error("No data found for the given email");
-          }
+          userData = response.data;
         } else {
-          throw new Error("No authenticated user found");
+          // Fallback to fetching by email
+          const { data: { user }, error } = await supabase.auth.getUser();
+          if (error) throw error;
+
+          if (user && user.email) {
+            const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/user`, {
+              params: { email: user.email },
+            });
+            userData = response.data;
+          } else {
+            throw new Error("No authenticated user found");
+          }
+        }
+
+        if (userData) {
+          //console.log("Data retrieved:", userData);
+          commit("setDbData", userData);
+          commit("setHasFilled", userData.hasFilled);
+        } else {
+          throw new Error("No data found for the user");
         }
       } catch (error) {
         console.error("Failed to fetch user data:", error.message);

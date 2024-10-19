@@ -13,9 +13,7 @@
             max-height="80"
             class="mx-auto mb-4"
           ></v-img>
-          <v-card-subtitle
-            >Create your next gen builder's profile</v-card-subtitle
-          >
+          <v-card-subtitle>Create your next gen builder's profile</v-card-subtitle>
           <v-form @submit.prevent="handleMagicLinkSignIn">
             <v-text-field
               label="Email address"
@@ -31,8 +29,16 @@
               :disabled="loading"
             >
               <span v-if="!loading">Sign In</span>
-              <span v-else>Signing In...</span></v-btn
+              <span v-else>Signing In...</span>
+            </v-btn>
+            <v-btn
+              @click="handleOpenCampusLogin"
+              color="primary"
+              block
+              class="mt-4"
             >
+              Login with OpenCampus
+            </v-btn>
             <v-alert v-if="emailSent" type="success" dismissible>
               A magic link has been sent to your email address. You may close
               this tab now.
@@ -49,6 +55,7 @@
 
 <script>
 import { supabase } from '@/supabase';
+import { OCAuthSandbox } from '@opencampus/ocid-connect-js';
 
 export default {
   data() {
@@ -58,7 +65,26 @@ export default {
       emailSent: false,
       errorMessage: "",
       loading: false,
+      ocAuth: null,
     };
+  },
+  async created() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        this.$router.push("/dashboard");
+      }
+      const redirectUri = `${window.location.origin}/redirect`;
+      //console.log(redirectUri);
+      console.log(localStorage.getItem('ocid_auth'));
+      const opts = {
+        redirectUri: redirectUri,
+        referralCode: 'PARTNER6'
+      };
+      this.ocAuth = new OCAuthSandbox(opts);
+    } catch (error) {
+      console.error("Error checking session:", error);
+    }
   },
   methods: {
     async handleMagicLinkSignIn() {
@@ -113,17 +139,17 @@ export default {
         }
       }
     },
-  },
-  async created() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        this.$router.push("/dashboard");
+    async handleOpenCampusLogin() {
+      try {
+        console.log("Attempting OpenCampus login...");
+        await this.ocAuth.signInWithRedirect({
+          state: 'opencampus',
+        });
+      } catch (error) {
+        console.error('OpenCampus login error:', error);
+        this.errorMessage = "An error occurred during OpenCampus login. Please try again.";
       }
-    } catch (error) {
-      console.error("Error checking session:", error);
-      //to display error to user if required.
-    }
+    },
   },
 };
 </script>

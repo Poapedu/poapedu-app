@@ -2,6 +2,27 @@
   <v-container fluid class="pa-5 mt-10 skills-container" v-if="!loading">
 
     <h2 class="mb-4" style="font-weight:900;">SKILLS</h2>
+
+    <!-- No skills notice -->
+    <v-alert
+      v-if="userSkills.length === 0"
+      type="info"
+      outlined
+      prominent
+      class="mb-4"
+    >
+      <v-row align="center">
+        <v-col class="grow">You haven't added any skills yet. Start your journey by completing courses and earning certifications!</v-col>
+        <v-col class="shrink text-right">
+          <v-btn
+            color="info"
+            @click="scrollToPartners"
+          >
+            Explore Learning Paths
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-alert>
     <v-row>
       <!-- Left sidebar -->
       <v-col cols="3">
@@ -66,8 +87,9 @@
     </v-row>
   </v-container>
 
-  <v-container fluid class="pa-5 mt-10 oc-container">
+  <v-container fluid class="pa-5 mt-10 oc-container" ref="partnersSection">
     <h2 class="mb-4" style="font-weight:900;">YOU MAY ALSO LIKE</h2>
+    <p class="mb-4">Enhance your skill set and earn valuable certifications from our trusted partners. Explore the exciting learning opportunities below to accelerate your career growth!</p>
     <v-row>
       <v-col cols="6">
         <a href="https://www.hackquest.io/en/?ref=poapedu">
@@ -86,7 +108,6 @@
 <script>
 import { mapState } from "vuex";
 import axios from 'axios';
-
 import HackQuestOCP from '@/assets/hackquest-partner.png';
 import NewCampusOCP from '@/assets/new-campus-partner.png';
 
@@ -204,11 +225,15 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_LOCAL_SERVER_URL}/api/skills/${this.learnerId}`);
         this.userSkills = response.data.skills;
+        if (this.userSkills.length === 0) {
+          console.log('No skills found for this user');
+        }
         this.updateGridItems();
         this.updateCategorySubtitles();
-        this.loading = false;
       } catch (error) {
         console.error('Error fetching user skills:', error);
+        this.userSkills = []; // Set to empty array in case of error
+      } finally {
         this.loading = false;
       }
     },
@@ -236,7 +261,13 @@ export default {
       const randomElement = elements[Math.floor(Math.random() * elements.length)];
       const randomType = types[Math.floor(Math.random() * types.length)];
       return require(`@/assets/badges/badge_${randomElement}_${randomType}.png`);
-    }
+    },
+    scrollToPartners() {
+      const partnersSection = this.$refs.partnersSection;
+      if (partnersSection) {
+        partnersSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
   },
   created() {
     this.$watch(
@@ -268,5 +299,10 @@ export default {
 }
 .greyed-out {
   filter: grayscale(100%) opacity(50%);
+}
+.oc-container p {
+  font-size: 1.1em;
+  line-height: 1.5;
+  color: #333;
 }
 </style>

@@ -5,20 +5,8 @@
 </template>
 
 <script>
-//import { useAuth } from '@/composables/useAuth'
-
 export default {
-  name: 'App',
-  created() {
-    //console.log('App: created hook');
-  }
-  // setup() {
-  //   const { user } = useAuth()
-
-  //   return {
-  //     user
-  //   }
-  // }
+  name: 'App'
 }
 </script>
 

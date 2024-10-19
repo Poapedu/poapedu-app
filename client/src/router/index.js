@@ -5,7 +5,8 @@ import EditProfile from "@/views/EditProfile.vue";
 import SignInPage from "@/views/SignInPage.vue";
 import MintNFT from "@/views/MintNFT.vue";
 import PublicProfile from "@/views/PublicProfile.vue";
-import NotFound from "@/views/NotFound.vue"
+import NotFound from "@/views/NotFound.vue";
+import OCIDCallback from '@/components/OCIDCallback.vue';
 import { supabase } from "@/supabase";
 
 const routes = [
@@ -21,6 +22,10 @@ const routes = [
     path: "/profile/:slug",
     name: "PublicProfile",
     component: PublicProfile,
+  },
+  {
+    path: '/redirect',
+    component: OCIDCallback
   },
   {
     path: "/dashboard",
@@ -64,26 +69,22 @@ router.beforeEach(async (to, from, next) => {
 
   document.title = title || defaultTitle;
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  //console.log(`Router beforeEach - Session exists: ${!!session}`);
+  const { data: { session } } = await supabase.auth.getSession();
+  const ocidAuth = localStorage.getItem('ocid_auth');
+  
+  const isAuthenticated = !!session || !!ocidAuth;
   
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-  //console.log(`Route requires auth: ${requiresAuth}`);
 
-  // Check if the route is a public profile route
   if (to.name === 'PublicProfile') {
-    //console.log('Accessing public profile, allowing without auth');
     next();
-  } else if (requiresAuth && !session) {
-    //console.log('Auth required but no session, redirecting to home');
-    next("/");
-  } else if (to.path === "/" && session) {
-    //console.log('Home accessed with session, redirecting to dashboard');
+  } else if (requiresAuth && !isAuthenticated) {
+    next("/signin");
+  } else if (to.path === "/" && isAuthenticated) {
+    next("/dashboard");
+  } else if (to.path === "/signin" && isAuthenticated) {
     next("/dashboard");
   } else {
-    //console.log('Proceeding to requested route');
     next();
   }
 });
