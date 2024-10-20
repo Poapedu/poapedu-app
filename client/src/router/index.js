@@ -7,6 +7,7 @@ import MintNFT from "@/views/MintNFT.vue";
 import PublicProfile from "@/views/PublicProfile.vue";
 import NotFound from "@/views/NotFound.vue";
 import OCIDCallback from '@/components/OCIDCallback.vue';
+import OCIDEmailCapture from "@/components/OCIDEmailCapture.vue";
 import { supabase } from "@/supabase";
 
 const routes = [
@@ -26,6 +27,11 @@ const routes = [
   {
     path: '/redirect',
     component: OCIDCallback
+  },
+  {
+    path: '/ocid-email-capture',
+    name: 'OCIDEmailCapture',
+    component: OCIDEmailCapture,
   },
   {
     path: "/dashboard",

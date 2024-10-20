@@ -102,15 +102,12 @@
                 <v-text-field
                   id="email"
                   v-model="form.email"
-                  type="email"
+                  readonly
+                  hide-details
                   class="custom-input"
-                  variant="solo"
                   bg-color="white"
                   density="compact"
-                  placeholder="Enter your email"
-                  @input="handleEmailInput"
-                  :rules="[rules.required, rules.email]"
-                  validate-on-blur
+                  variant="solo"
                 ></v-text-field>
               </div>
             </v-col>

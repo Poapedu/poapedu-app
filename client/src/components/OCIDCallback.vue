@@ -43,7 +43,9 @@ export default {
         }
 
         // Redirect to dashboard
-        this.$router.push('/dashboard');
+        //this.$router.push('/dashboard');
+        //route user to email capture
+        this.$router.push('/ocid-email-capture');
       } else {
         throw new Error('No idToken received from OCID or not authenticated');
       }

@@ -31,6 +31,7 @@
               <span v-if="!loading">Sign In</span>
               <span v-else>Signing In...</span>
             </v-btn>
+            <div class="mt-4 mb-4 text-center"> OR </div>
             <v-btn
               @click="handleOpenCampusLogin"
               color="primary"

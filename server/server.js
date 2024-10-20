@@ -40,6 +40,8 @@ app.post("/subscribe", (req, res) => {
   db.query(sql, [email], (err, result) => {
     if (err) {
       console.error("Database error:", err);
+      
+      
       res.status(500).json({ success: false, message: "Subscription failed" });
     } else {
       res.json({ success: true, message: "Subscription successful" });
@@ -956,6 +958,50 @@ app.get("/api/user-by-id", async (req, res) => {
   } catch (error) {
     console.error("Database query failed:", error);
     res.status(500).json({ error: "Database query failed" });
+  }
+});
+
+/**   
+ * Capture email address of the user if OCID is used. Store both email and wallet address if email address exists
+ * in the same row. If not create a new row. This is to avoid two accounts for the same user.
+ */
+app.post('/api/ocid-email-capture', async (req, res) => {
+  const { email, eth_address } = req.body;
+
+  if (!email || !eth_address) {
+    return res.status(400).json({ success: false, message: 'Email and ETH address are required' });
+  }
+
+  let connection;
+  try {
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    // Check if the email already exists
+    const [learners] = await connection.query('SELECT * FROM Learners WHERE email = ?', [email]);
+    let learnerId;
+
+    if (learners.length > 0) {
+      // Update the existing learner with the OCID wallet address
+      await connection.query('UPDATE Learners SET wallet_address = ? WHERE email = ?', [eth_address, email]);
+      learnerId = learners[0].learner_id;
+    } else {
+      // Create a new learner
+      const [result] = await connection.query(
+        'INSERT INTO Learners (email, wallet_address) VALUES (?, ?)',
+        [email, eth_address]
+      );
+      learnerId = result.insertId;
+    }
+
+    await connection.commit();
+    res.json({ success: true, learnerId: learnerId });
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error('Error in OCID email capture:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
