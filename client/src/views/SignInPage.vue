@@ -32,14 +32,22 @@
               <span v-else>Signing In...</span>
             </v-btn>
             <div class="mt-4 mb-4 text-center"> OR </div>
-            <v-btn
+            <!-- <v-btn
               @click="handleOpenCampusLogin"
               color="primary"
               block
               class="mt-4"
             >
               Login with OpenCampus
-            </v-btn>
+            </v-btn> -->
+            <v-img
+              src="../assets/connect-ocid.png"
+              alt="Login with OpenCampus"
+              @click="handleOpenCampusLogin"
+              class="mt-4 cursor-pointer"
+              max-height="48"
+              contain
+            ></v-img>
             <v-alert v-if="emailSent" type="success" dismissible>
               A magic link has been sent to your email address. You may close
               this tab now.
@@ -176,5 +184,9 @@ export default {
 .v-card-title,
 .v-card-subtitle {
   text-align: center;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
